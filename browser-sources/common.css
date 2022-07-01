@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+
+:root {
+  /* rgb(232, 99, 0) */
+  --reentry-orange: #e86300;
+  /* rgb(81, 74, 70) */
+  --battletech-grey: #514a46;
+}
+
+html, body {
+  background-color: transparent;
+  font-family: 'IBM Plex Mono', monospace;
+  overflow: hidden;
+}

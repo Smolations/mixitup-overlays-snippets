@@ -1,0 +1,155 @@
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<style type="text/css">
+		img.images {
+			position: absolute;
+			margin-right: -50%;
+			transform: translate(-50%, -50%)
+		}
+		
+		h1.textElements {
+			color: blue;
+			white-space: nowrap;
+			text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+			position: absolute;
+			transform: translate(-50%, -50%);
+			font-family: "Gravedigger";
+		}
+	</style>
+	<script>
+		
+		var runningImage;	
+		var dashingImage;
+		var standingImage;
+		
+		var usernameText;
+		var followedText;
+
+		var runningImagePosX = -10;
+		var dashingImagePosX = 55;
+		
+		var followedTextPosX = -40;
+	
+		function init()
+		{
+			var username = gup("username", window.location.href);
+		
+			runningImage = document.getElementById('runningImage');
+			dashingImage = document.getElementById('dashingImage');
+			standingImage = document.getElementById('standingImage');
+			
+			usernameText = document.getElementById('usernameText');
+			usernameText.innerHTML = username;
+			followedText = document.getElementById('followedText');
+			followedText.innerHTML = "Followed";
+			
+			runningImage.style.cssText += 'left: -10%; top: 25%;';
+			runningImage.style.visibility = 'visible';
+			dashingImage.style.cssText += 'left: -10%; top: 25%;';
+			standingImage.style.cssText += 'left: 1555px; top: 267px;';
+			
+			usernameText.style.cssText += 'left: -30%; top: 15%;';
+			usernameText.style.visibility = 'visible';
+			followedText.style.cssText += 'left: -30%; top: 25%;';
+			followedText.style.visibility = 'visible';
+			
+			startRunning();
+		}
+		
+		function startRunning()
+		{
+			runningImagePosX += 1;
+			followedTextPosX += 1;
+			
+			runningImage.style.left = runningImagePosX + '%'
+			usernameText.style.left = followedTextPosX + '%'
+			followedText.style.left = followedTextPosX + '%'
+			
+			if (runningImagePosX < 50)
+			{
+				setTimeout(function() { startRunning(); }, 25);
+			}
+			else
+			{
+				runningImage.style.visibility = 'hidden';
+				dashingImage.style.visibility = 'visible';
+			
+				startSliding();
+			}
+		}
+		
+		function startSliding()
+		{
+			dashingImagePosX += 1;
+			if (followedTextPosX < 50)
+			{
+				followedTextPosX += 2;
+			}
+			
+			dashingImage.style.left = dashingImagePosX + '%'
+			usernameText.style.left = followedTextPosX + '%'
+			followedText.style.left = followedTextPosX + '%'
+			if (dashingImagePosX < 75)
+			{
+				setTimeout(function() { startSliding(); }, 40);
+			}
+			else
+			{
+				dashingImage.style.visibility = 'hidden';
+				standingImage.style.visibility = 'visible';
+				
+				var audio = new Audio('MegaManX1Up.mp3');
+				audio.play();
+				
+				runningImagePosX = 80;
+				
+				setTimeout(function() { continueRunning(); }, 2500);
+			}		
+		}
+		
+		function continueRunning()
+		{
+			standingImage.style.visibility = 'hidden';
+			runningImage.style.visibility = 'visible';
+		
+			runningImagePosX += 1;
+			followedTextPosX += 1;
+			
+			runningImage.style.left = runningImagePosX + '%'
+			usernameText.style.left = followedTextPosX + '%'
+			followedText.style.left = followedTextPosX + '%'
+			
+			if (runningImagePosX < 150)
+			{
+				setTimeout(function() { continueRunning(); }, 25);
+			}
+			else
+			{
+				runningImage.style.visibility = 'hidden';
+				usernameText.style.visibility = 'hidden';
+				followedText.style.visibility = 'hidden';
+			}
+		}
+
+		function gup( name, url ) {
+			if (!url) url = location.href;
+			name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+			var regexS = "[\\?&]"+name+"=([^&#]*)";
+			var regex = new RegExp( regexS );
+			var results = regex.exec( url );
+			return results == null ? null : results[1];
+		}
+		
+		window.onload = function() { setTimeout(function() { init(); }, 500); };
+	</script>
+</head>
+	<body>
+		<img id="runningImage" src="MegaManXRunning.gif" class="images" style="visibility:hidden" />
+		<img id="dashingImage" src="MegaManXDashing.gif" class="images" style="visibility:hidden" />
+		<img id="standingImage" src="MegaManXStanding.png" class="images" style="visibility:hidden" />
+		
+		<h1 id="usernameText" class="textElements" style="font-size: 65px; top: 15%; left: 150%" />
+		<h1 id="followedText" class="textElements" style="font-size: 65px; top: 25%; left: 150%" />
+	</body>
+</html>
