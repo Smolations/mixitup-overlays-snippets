@@ -11,6 +11,9 @@
 
   --terminal-height: 300px;
   --terminal-width: 80%;
+  --terminal-overlap: 15px;
+  --terminal-closed-transform: translateY(calc(-1 * (var(--terminal-height) + var(--terminal-overlap))));
+  --terminal-opened-transform: translateY(0);
 
   --text-glow-default: 0px 0px 8px #666666;
   /* --text-glow-highlight: 0px 0px 8px var(--reentry-orange); */
@@ -28,26 +31,6 @@ pre {
   white-space: pre-wrap;
 }
 
-.terminal-container {
-  display: none;
-  position: relative;
-  height: var(--terminal-height);
-  /* height: 0; */
-  left: calc((100% - var(--terminal-width)) / 2);
-  width: var(--terminal-width);
-
-  padding-top: 10px;
-  top: -10px;
-
-  background-color: var(--terminal-bg-color);
-  box-shadow: 3px 3px 5px #000000;
-  border: 8px solid var(--battletech-grey);
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  border-top: none;
-}
-
-
 @keyframes terminal-drift {
   0% {
     -webkit-mask-position: 0 0;
@@ -58,6 +41,64 @@ pre {
     mask-position: 0 var(--terminal-height);
   }
 }
+
+@keyframes terminal-open {
+  0% {
+    transform: var(--terminal-closed-transform);
+  }
+  30% {
+    transform: translateY(calc(-1 * (var(--terminal-height) / 2)));
+  }
+  100% {
+    transform: var(--terminal-opened-transform);
+  }
+}
+
+@keyframes terminal-close {
+  0% {
+    transform: var(--terminal-opened-transform);
+  }
+  30% {
+    transform: translateY(calc(-1 * (var(--terminal-height) / 2)));
+  }
+  100% {
+    transform: var(--terminal-closed-transform);
+  }
+}
+
+.terminal-container {
+  position: relative;
+  left: calc((100% - var(--terminal-width)) / 2);
+  top: calc(-1 * var(--terminal-overlap));
+
+  height: var(--terminal-height);
+  width: var(--terminal-width);
+  padding-top: var(--terminal-overlap);
+
+  background-color: var(--terminal-bg-color);
+  box-shadow: 3px 3px 5px #000000;
+  border: 8px solid var(--battletech-grey);
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top: none;
+}
+
+.terminal-opening {
+  animation: 5s ease-in-out terminal-open;
+}
+
+.terminal-opened {
+  transform: var(--terminal-opened-transform);
+}
+
+.terminal-closing {
+  animation: 3s ease-in-out terminal-close;
+}
+
+.terminal-closed {
+  transform: var(--terminal-closed-transform);
+}
+
 
 .terminal {
   box-sizing: border-box;

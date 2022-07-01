@@ -6,18 +6,32 @@ class Terminal {
   highlightClass = 'terminal-highlight';
   normalTextClass = 'terminal-normal';
 
-  slideDuration = 1500;
+  closedClass = 'terminal-closed';
+  closingClass = 'terminal-closing';
+  openClass = 'terminal-opened';
+  openingClass = 'terminal-opening';
+
 
   constructor() {
-    this.$terminal = $('.terminal');
-    this.$terminalContainer = $('.terminal-container');
+    const $body = $('body');
+    const $terminalContainer = $('<div>');
+    const $terminal = $('<section>');
+
+    $terminalContainer.addClass('terminal-container').addClass(this.closedClass);
+    $terminal.addClass('terminal');
+
+    $terminalContainer.append($terminal);
+    $body.prepend($terminalContainer);
+
+    this.$terminalContainer = $terminalContainer;
+    this.$terminal = $terminal;
 
     // terminals always start up with an empty line
     this.addInputLine();
   }
 
   getNewLine() {
-    return $('<pre></pre>').addClass(this.lineClass);
+    return $('<pre>').addClass(this.lineClass);
   }
 
   // inserts the line element and returns it
@@ -47,7 +61,7 @@ class Terminal {
 
     const cleanOutput = output.trim().replaceAll(/\s+/g, ' ');
 
-    const $code = $('<code></code>');
+    const $code = $('<code>');
     const $newLine = this.getNewLine().addClass(this.outputLineClass).append($code);
 
     $code.append(
@@ -104,19 +118,41 @@ class Terminal {
     await this.addInput(stdin);
 
     stdout.forEach((lineStr) => {
-      console.log($.parseHTML(lineStr));
       this.addOutput(lineStr);
     });
 
     this.addInputLine();
   }
 
-  open(callback) {
-    this.$terminalContainer.slideDown(this.slideDuration, callback);
+  open(delay = 0) {
+    return new Promise((resolve) => {
+      this.$terminalContainer.one('animationend', () => {
+        this.$terminalContainer.removeClass(this.openingClass).addClass(this.openClass);
+        resolve();
+      });
+
+      setTimeout(() => {
+        this.$terminalContainer
+          .removeClass(this.closedClass)
+          .addClass(this.openingClass);
+      }, delay);
+    });
   }
 
-  close() {
-    this.$terminalContainer.slideUp(this.slideDuration);
+  close(delay = 0) {
+    return new Promise((resolve) => {
+      this.$terminalContainer.one('animationend', () => {
+        this.$terminalContainer.removeClass(this.closingClass).addClass(this.closedClass);
+        resolve();
+      });
+
+      setTimeout(() => {
+        this.$terminalContainer
+          .removeClass(this.openClass)
+          .addClass(this.closingClass);
+      }, delay);
+    });
+
   }
 }
 
@@ -157,14 +193,13 @@ async function processNewSubscriber(terminal, params) {
     complimentary message.
   `;
 
-  terminal.open(async () => {
-    await terminal.command(
-      'latest_subscriber --welcome',
-      terminal.printf(formatStr, username),
-    );
+  await terminal.open();
+  await terminal.command(
+    'latest_subscriber --welcome',
+    terminal.printf(formatStr, username),
+  );
 
-    setTimeout(() => terminal.close(), 5000);
-  });
+  terminal.close(5000);
 }
 
 
