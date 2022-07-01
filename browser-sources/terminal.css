@@ -4,17 +4,19 @@
   shows content completely, while transparent hides it.
 */
 :root {
-  --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
   --terminal-color: #ffffff;
-  --terminal-bg-color: #000000;
+  --terminal-bg-color: rgba(0, 0, 0, 0.75);
   --terminal-highlight-color: var(--reentry-orange);
 
   --terminal-height: 300px;
   --terminal-width: 80%;
   --terminal-overlap: 15px;
-  --terminal-closed-transform: translateY(calc(-1 * (var(--terminal-height) + var(--terminal-overlap))));
-  --terminal-opened-transform: translateY(0);
+  --terminal-border-width: 8px;
 
+  --terminal-closed-transform: translateY(0);
+  --terminal-opened-transform: translateY(calc(var(--terminal-height) + var(--terminal-overlap)));
+
+  --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
   --text-glow-default: 0px 0px 8px #666666;
   /* --text-glow-highlight: 0px 0px 8px var(--reentry-orange); */
   --text-glow-highlight: 0px 0px 8px rgba(232, 99, 0, 0.8);
@@ -46,8 +48,11 @@ pre {
   0% {
     transform: var(--terminal-closed-transform);
   }
-  30% {
-    transform: translateY(calc(-1 * (var(--terminal-height) / 2)));
+  15% {
+    transform: translateY(calc(0.7 * var(--terminal-height)));
+  }
+  20% {
+    transform: translateY(calc(0.65 * var(--terminal-height)));
   }
   100% {
     transform: var(--terminal-opened-transform);
@@ -58,8 +63,8 @@ pre {
   0% {
     transform: var(--terminal-opened-transform);
   }
-  30% {
-    transform: translateY(calc(-1 * (var(--terminal-height) / 2)));
+  40% {
+    transform: translateY(calc(0.3 * var(--terminal-height)));
   }
   100% {
     transform: var(--terminal-closed-transform);
@@ -67,24 +72,32 @@ pre {
 }
 
 .terminal-container {
+  box-sizing: border-box;
   position: relative;
   left: calc((100% - var(--terminal-width)) / 2);
-  top: calc(-1 * var(--terminal-overlap));
+  top: calc(-1 * (var(--terminal-height) + var(--terminal-overlap)));
 
   height: var(--terminal-height);
   width: var(--terminal-width);
   padding-top: var(--terminal-overlap);
 
   background-color: var(--terminal-bg-color);
-  box-shadow: 3px 3px 5px #000000;
-  border: 8px solid var(--battletech-grey);
+  background-image: url('img/monogram_white.png');
+  background-repeat: no-repeat;
+  background-size: 10%;
+  background-position: bottom 10px right 10px;
+
+  box-shadow: 0 0 25px #000000;
+  border: var(--terminal-border-width) solid var(--battletech-grey);
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
   border-top: none;
+
+  overflow: hidden;
 }
 
 .terminal-opening {
-  animation: 5s ease-in-out terminal-open;
+  animation: 3s ease-in terminal-open;
 }
 
 .terminal-opened {
@@ -92,7 +105,7 @@ pre {
 }
 
 .terminal-closing {
-  animation: 3s ease-in-out terminal-close;
+  animation: 2s ease-out terminal-close;
 }
 
 .terminal-closed {
@@ -104,9 +117,11 @@ pre {
   box-sizing: border-box;
   position: absolute;
   bottom: 0;
-  height: var(--terminal-height);
+  min-height: 100%;
   width: 100%;
   padding: 0.2em 0;
+
+  background-color: var(--terminal-bg-color);
   color: var(--terminal-color);
   font-weight: bold;
   font-size: 2em;
@@ -115,7 +130,7 @@ pre {
   mask-image: var(--msk);
   -webkit-mask-size: 200%;
   mask-size: 200%;
-  animation: terminal-drift 8s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0);
+  animation: terminal-drift 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0);
 }
 
 .terminal-line {

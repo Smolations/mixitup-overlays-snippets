@@ -157,6 +157,7 @@ class Terminal {
 }
 
 
+// ?subject=drive&username=chode&name=PNY 1kb drive&base=37&bonus=13&target=bytes
 async function processDrive(terminal, params) {
   const sanitizedName = params.get('name').toLowerCase().replaceAll(' ', '_');
   const username = params.get('username');
@@ -169,20 +170,31 @@ async function processDrive(terminal, params) {
 
   bytesBonus && bytesFiles.push(`${bytesBonus}.${targetPrize}`);
 
+  await terminal.open();
   await terminal.command(`mkdir ${folderName}`);
   await terminal.command(`mount /dev/sdb1 ${folderName}`);
-  await terminal.command(`cd ${folderName} && ls -la`, `${username}.tar.gz`);
-  await terminal.command(`tar -xvf ${username}.tar.gz`, bytesFiles);
+  await terminal.command(
+    `cd ${folderName} && ls -la`,
+    terminal.printf('%h.tar.gz', username),
+  );
+  await terminal.command(
+    `tar -xvf ${username}.tar.gz`,
+    ...bytesFiles.map((out) => terminal.printf('%h', out)),
+  );
+
+  terminal.close(5000);
 }
 
 async function processNewFollower(terminal, params) {
   const username = params.get('username');
 
-  // should newlines be used to control display
+  await terminal.open();
   await terminal.command(
     'latest_follower --welcome',
     terminal.printf('welcome %h, you have followed. now go clean the lavoratory.', username),
   );
+
+  terminal.close(5000);
 }
 
 
