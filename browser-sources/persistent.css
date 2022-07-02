@@ -1,0 +1,37 @@
+/* :root {
+  --terminal-height: 150px;
+  --terminal-width: 135px;
+} */
+
+.monogram-container {
+  height: 150px;
+  width: 135px;
+  border-bottom-right-radius: 90px;
+
+  /* --aug-clip-br1: initial;
+  --aug-clip-br2: initial;
+  --aug-br-extend1: 10px;
+  --aug-br-extend2: 10px;
+  --aug-br-inset1: 10px;
+  --aug-br-inset2: 10px;
+  --aug-border-bg: pink; */
+}
+
+.monogram-container > .terminal {
+  height: 100%;
+}
+
+.monogram-container img {
+  position: relative;
+  top: 3%;
+  left: 8%;
+  height: 95%;
+}
+
+.latest-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20%;
+  height: 1em;
+}

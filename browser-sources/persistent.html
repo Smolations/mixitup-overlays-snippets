@@ -9,7 +9,7 @@
   <link rel="stylesheet" type="text/css" href="./reset.css">
   <link rel="stylesheet" type="text/css" href="./common.css">
   <link rel="stylesheet" type="text/css" href="./terminal.css">
-  <link rel="stylesheet" type="text/css" href="./terminal-bare.css">
+  <link rel="stylesheet" type="text/css" href="./persistent.css">
 
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sprintf-js@1.1.2/dist/sprintf.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -17,8 +17,18 @@
 </head>
 
 <body>
+  <div class="terminal-container monogram-container">
+    <section class="terminal">
+      <img class="terminal-highlight" src="./img/monogram_orange.png" />
+    </section>
+  </div>
 
-  <script src="./terminal.js"></script>
+  <div class="terminal-container latest-container">
+    <section class="terminal">
+      <marquee><pre><code>latest follower</code></pre></marquee>
+    </section>
+  </div>
+  <!-- <script src="./terminal.js"></script> -->
 </body>
 
 </html>

@@ -8,8 +8,8 @@
   --terminal-bg-color: rgba(0, 0, 0, 0.75);
   --terminal-highlight-color: var(--reentry-orange);
 
-  --terminal-height: 300px;
-  --terminal-width: 80%;
+  --terminal-height: 50px;
+  --terminal-width: 50px;
   --terminal-overlap: 15px;
   --terminal-border-width: 8px;
 
@@ -24,14 +24,7 @@
   --glow-highlight: drop-shadow(var(--text-glow-highlight));
 }
 
-body {
-  height: 100vh;
-  position: relative;
-}
 
-pre {
-  white-space: pre-wrap;
-}
 
 @keyframes terminal-drift {
   0% {
@@ -44,48 +37,15 @@ pre {
   }
 }
 
-@keyframes terminal-open {
-  0% {
-    transform: var(--terminal-closed-transform);
-  }
-  15% {
-    transform: translateY(calc(0.7 * var(--terminal-height)));
-  }
-  20% {
-    transform: translateY(calc(0.65 * var(--terminal-height)));
-  }
-  100% {
-    transform: var(--terminal-opened-transform);
-  }
-}
-
-@keyframes terminal-close {
-  0% {
-    transform: var(--terminal-opened-transform);
-  }
-  40% {
-    transform: translateY(calc(0.3 * var(--terminal-height)));
-  }
-  100% {
-    transform: var(--terminal-closed-transform);
-  }
-}
-
 .terminal-container {
   box-sizing: border-box;
   position: relative;
-  left: calc((100% - var(--terminal-width)) / 2);
-  top: calc(-1 * (var(--terminal-height) + var(--terminal-overlap)));
 
   height: var(--terminal-height);
   width: var(--terminal-width);
   padding-top: var(--terminal-overlap);
 
   background-color: var(--terminal-bg-color);
-  background-image: url('img/monogram_white.png');
-  background-repeat: no-repeat;
-  background-size: 10%;
-  background-position: bottom 10px right 10px;
 
   box-shadow: 0 0 25px #000000;
   border: var(--terminal-border-width) solid var(--battletech-grey);
@@ -94,22 +54,6 @@ pre {
   border-top: none;
 
   overflow: hidden;
-}
-
-.terminal-opening {
-  animation: 3s ease-in terminal-open;
-}
-
-.terminal-opened {
-  transform: var(--terminal-opened-transform);
-}
-
-.terminal-closing {
-  animation: 2s ease-out terminal-close;
-}
-
-.terminal-closed {
-  transform: var(--terminal-closed-transform);
 }
 
 

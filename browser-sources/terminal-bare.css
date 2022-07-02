@@ -1,0 +1,58 @@
+:root {
+  --terminal-height: 300px;
+  --terminal-width: 80%;
+}
+
+
+@keyframes terminal-open {
+  0% {
+    transform: var(--terminal-closed-transform);
+  }
+  15% {
+    transform: translateY(calc(0.7 * var(--terminal-height)));
+  }
+  20% {
+    transform: translateY(calc(0.65 * var(--terminal-height)));
+  }
+  100% {
+    transform: var(--terminal-opened-transform);
+  }
+}
+
+@keyframes terminal-close {
+  0% {
+    transform: var(--terminal-opened-transform);
+  }
+  40% {
+    transform: translateY(calc(0.3 * var(--terminal-height)));
+  }
+  100% {
+    transform: var(--terminal-closed-transform);
+  }
+}
+
+.terminal-container {
+  left: calc((100% - var(--terminal-width)) / 2);
+  top: calc(-1 * (var(--terminal-height) + var(--terminal-overlap)));
+
+  background-image: url('img/monogram_white.png');
+  background-repeat: no-repeat;
+  background-size: 10%;
+  background-position: bottom 10px right 10px;
+}
+
+.terminal-opening {
+  animation: 3s ease-in terminal-open;
+}
+
+.terminal-opened {
+  transform: var(--terminal-opened-transform);
+}
+
+.terminal-closing {
+  animation: 2s ease-out terminal-close;
+}
+
+.terminal-closed {
+  transform: var(--terminal-closed-transform);
+}

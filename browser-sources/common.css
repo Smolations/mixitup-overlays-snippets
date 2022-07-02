@@ -13,3 +13,12 @@ html, body {
   font-family: 'IBM Plex Mono', monospace;
   overflow: hidden;
 }
+
+body {
+  height: 100vh;
+  position: relative;
+}
+
+pre {
+  white-space: pre-wrap;
+}
