@@ -3,10 +3,18 @@
   --terminal-width: 135px;
 } */
 
+.terminal-container {
+  top: 0;
+}
+
 .monogram-container {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 150px;
   width: 135px;
   border-bottom-right-radius: 90px;
+  border-left: none;
 
   /* --aug-clip-br1: initial;
   --aug-clip-br2: initial;
@@ -33,5 +41,11 @@
   top: 0;
   right: 0;
   width: 20%;
+  height: 4em;
+}
+
+.latest-container pre,
+.latest-container code {
   height: 1em;
+  white-space: pre;
 }

@@ -3,27 +3,49 @@
   values are multipled with the underlying content. so black
   shows content completely, while transparent hides it.
 */
+/* 1920 / 19.2 = 60! */
+/* 19.2px === 1ch @ 32px font-size */
 :root {
+  /* symbolic values */
+  --terminal-rows: 2; /* number of lines visible */
+  --terminal-columns: 25; /* number of characters per line */
+  /* /symbolic values */
+
   --terminal-color: #ffffff;
   --terminal-bg-color: rgba(0, 0, 0, 0.75);
   --terminal-highlight-color: var(--reentry-orange);
 
-  --terminal-height: 50px;
-  --terminal-width: 50px;
-  --terminal-overlap: 15px;
-  --terminal-border-width: 8px;
+  --terminal-font-size: 32px;
+  --terminal-line-horizontal-padding: 1ch;
+  --terminal-line-vertical-padding: calc(0.15 * var(--terminal-font-size));
+  --terminal-border-width: calc(0.25 * var(--terminal-font-size));
+  --terminal-offscreen-shift: calc(0.5 * var(--terminal-font-size)); /* off screen when closed */
+  --terminal-height: calc(
+    var(--terminal-border-width)
+    + ((1 + (var(--terminal-rows))) * (2 * var(--terminal-line-vertical-padding))) /* extra padding for first/last lines */
+    + (var(--terminal-rows) * var(--terminal-font-size))
+  );
+  --terminal-width: calc(
+    (2 * var(--terminal-border-width))
+    + (2 * var(--terminal-line-horizontal-padding))
+    + (var(--terminal-columns) * 1ch)
+  );
 
   --terminal-closed-transform: translateY(0);
-  --terminal-opened-transform: translateY(calc(var(--terminal-height) + var(--terminal-overlap)));
+  --terminal-opened-transform: translateY(calc(var(--terminal-height) + var(--terminal-offscreen-shift)));
 
   --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
   --text-glow-default: 0px 0px 8px #666666;
-  /* --text-glow-highlight: 0px 0px 8px var(--reentry-orange); */
   --text-glow-highlight: 0px 0px 8px rgba(232, 99, 0, 0.8);
   --glow-white: drop-shadow(var(--text-glow-default));
   --glow-highlight: drop-shadow(var(--text-glow-highlight));
 }
 
+/* ensure :root relative font-size lengths are correct */
+html,
+body {
+  font-size: var(--terminal-font-size);
+}
 
 
 @keyframes terminal-drift {
@@ -41,9 +63,11 @@
   box-sizing: border-box;
   position: relative;
 
+  /* default to offscreen so that animation/transforms don't all need -1 * ... */
+  top: calc(-1 * (var(--terminal-height) + var(--terminal-offscreen-shift)));
+
   height: var(--terminal-height);
   width: var(--terminal-width);
-  padding-top: var(--terminal-overlap);
 
   background-color: var(--terminal-bg-color);
 
@@ -63,12 +87,12 @@
   bottom: 0;
   min-height: 100%;
   width: 100%;
-  padding: 0.2em 0;
+  padding: var(--terminal-line-vertical-padding) 0;
 
   background-color: var(--terminal-bg-color);
   color: var(--terminal-color);
   font-weight: bold;
-  font-size: 2em;
+  font-size: var(--terminal-font-size);
 
   -webkit-mask-image: var(--msk);
   mask-image: var(--msk);
@@ -79,8 +103,7 @@
 
 .terminal-line {
   margin: 0;
-  padding: 0 0.5em;
-  line-height: 1.3;
+  padding: var(--terminal-line-vertical-padding) var(--terminal-line-horizontal-padding);
 }
 
 /* .terminal-input { */
@@ -99,7 +122,7 @@
 
 .terminal-line.terminal-input::before {
   content: "$";
-  padding: 0 0.5em 0 0;
+  padding: 0 1ch 0 0;
 }
 
 @keyframes cursor-blink {
@@ -114,10 +137,62 @@
 
 .terminal-line:last-child::after {
   content: "\2593";
-  padding-left: 0.1em;
+  padding-left: 0.1em; /* needs var? */
   animation: 0.6s cursor-blink infinite;
 }
 
 .terminal-line:last-of-type:empty::after {
   padding-left: 0;
+}
+
+
+/**
+ * opening/closing animations
+ */
+@keyframes terminal-open {
+  0% {
+    transform: var(--terminal-closed-transform);
+  }
+
+  15% {
+    transform: translateY(calc(0.7 * var(--terminal-height)));
+  }
+
+  20% {
+    transform: translateY(calc(0.65 * var(--terminal-height)));
+  }
+
+  100% {
+    transform: var(--terminal-opened-transform);
+  }
+}
+
+@keyframes terminal-close {
+  0% {
+    transform: var(--terminal-opened-transform);
+  }
+
+  40% {
+    transform: translateY(calc(0.3 * var(--terminal-height)));
+  }
+
+  100% {
+    transform: var(--terminal-closed-transform);
+  }
+}
+
+.terminal-opening {
+  animation: 3s ease-in terminal-open;
+}
+
+.terminal-opened {
+  transform: var(--terminal-opened-transform);
+}
+
+.terminal-closing {
+  animation: 2s ease-out terminal-close;
+}
+
+.terminal-closed {
+  transform: var(--terminal-closed-transform);
 }

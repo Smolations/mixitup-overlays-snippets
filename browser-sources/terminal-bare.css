@@ -33,7 +33,7 @@
 
 .terminal-container {
   left: calc((100% - var(--terminal-width)) / 2);
-  top: calc(-1 * (var(--terminal-height) + var(--terminal-overlap)));
+  /* top: calc(-1 * (var(--terminal-height) + var(--terminal-overlap))); */
 
   background-image: url('img/monogram_white.png');
   background-repeat: no-repeat;

@@ -1,0 +1,18 @@
+:root {
+  /* --terminal-height: 9em; */
+  /* --terminal-width: 30%; */
+}
+
+
+.terminal-container {
+  position: absolute;
+  right: 1ch;
+}
+
+.terminal-marquee {
+  position: relative;
+}
+
+code, pre {
+  white-space: pre;
+}
