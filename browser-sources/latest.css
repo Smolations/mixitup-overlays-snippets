@@ -16,3 +16,7 @@
 code, pre {
   white-space: pre;
 }
+
+.terminal-line:last-child::after {
+  content: '';
+}

@@ -57,11 +57,20 @@ export default class Terminal {
     $body.prepend($terminalContainer);
 
     // hold onto references for other methods
+    this.$root = $root;
     this.$terminalContainer = $terminalContainer;
     this.$terminal = $terminal;
 
     // terminals always start up with an empty line
     this.addInputLine();
+  }
+
+  var(varName) {
+    if (!this.vars[varName]) {
+      console.error('varName %o not recognized!', varName);
+      return;
+    }
+    return this.$root.css(this.vars[varName]);
   }
 
   getNewLine() {
@@ -162,9 +171,7 @@ export default class Terminal {
     });
 
     if (typeof(opts.process) === 'function') {
-      console.log('awaiting')
       await opts.process();
-      console.log('awaited')
       this.addInputLine();
     } else {
       this.addInputLine();

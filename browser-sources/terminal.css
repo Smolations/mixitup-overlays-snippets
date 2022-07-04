@@ -120,6 +120,7 @@ body {
   filter: var(--glow-highlight) var(--glow-highlight) brightness(1.5);
 }
 
+/* dollar sign prompt char */
 .terminal-line.terminal-input::before {
   content: "$";
   padding: 0 1ch 0 0;
@@ -135,6 +136,7 @@ body {
   }
 }
 
+/* trailing cursor */
 .terminal-line:last-child::after {
   content: "\2593";
   padding-left: 0.1em; /* needs var? */

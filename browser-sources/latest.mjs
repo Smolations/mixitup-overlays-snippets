@@ -8,7 +8,7 @@ import Terminal from './terminal.mjs';
  */
 $(document).ready(async () => {
   const queryParams = new URLSearchParams(window.location.search);
-  const terminal = new Terminal({ width: '20ch' });
+  const terminal = new Terminal({ columns: 20 });
 
   const follower = queryParams.get('follower');
   const subscriber = queryParams.get('subscriber');
@@ -16,13 +16,29 @@ $(document).ready(async () => {
   const processFn = () => (
     new Promise((resolve) => {
       const $lastLine = terminal.$terminal.children().filter('.terminal-output').last();
-      $lastLine.addClass('terminal-marquee');
-      let leftCount = 0;
+      const numCols = terminal.var('columns');
+      const numChars = $lastLine.text().length;
+      const maxRenders = 2;
+      let renderCount = 1;
+      let leftCount = numCols;
 
-//       const interval = setInterval(() => {
-//         $lastLine.css('left', `-${++leftCount}ch`);
-//
-//       }, 500);
+      $lastLine
+        .css('left', `${numCols}ch`)
+        .addClass('terminal-marquee');
+
+      const interval = setInterval(() => {
+        $lastLine.css('left', `${--leftCount}ch`);
+
+        if (leftCount < -numChars) {
+          if (renderCount++ < maxRenders) {
+            leftCount = numCols;
+            $lastLine.css('left', `${numCols}ch`)
+          } else {
+            clearInterval(interval);
+            resolve();
+          }
+        }
+      }, 200);
 
     })
   );
@@ -38,5 +54,5 @@ $(document).ready(async () => {
     },
   );
 
-  // terminal.close(5000);
+  terminal.close();
 });
