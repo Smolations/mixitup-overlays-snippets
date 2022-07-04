@@ -17,6 +17,6 @@ code, pre {
   white-space: pre;
 }
 
-.terminal-line:last-child::after {
+.terminal-line.terminal-output:last-child::after {
   content: '';
 }

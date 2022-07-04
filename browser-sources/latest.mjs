@@ -13,6 +13,9 @@ $(document).ready(async () => {
   const follower = queryParams.get('follower');
   const subscriber = queryParams.get('subscriber');
 
+  // consider abstracting out in Terminal class and get
+  // a lil overlap on the marquee exit
+  // ALSO, fix width jitter bug..  =/
   const processFn = () => (
     new Promise((resolve) => {
       const $lastLine = terminal.$terminal.children().filter('.terminal-output').last();
@@ -29,7 +32,7 @@ $(document).ready(async () => {
       const interval = setInterval(() => {
         $lastLine.css('left', `${--leftCount}ch`);
 
-        if (leftCount < -numChars) {
+        if (leftCount < -numChars - 1) {
           if (renderCount++ < maxRenders) {
             leftCount = numCols;
             $lastLine.css('left', `${numCols}ch`)
@@ -47,8 +50,8 @@ $(document).ready(async () => {
 
   await terminal.open();
   await terminal.command(
-    'print --latest',
-    terminal.printf('follower: %h      subscriber: %h', follower, subscriber),
+    'marquee --latest',
+    terminal.printf('follower: %h subscriber: %h', follower, subscriber),
     {
       process: processFn
     },
