@@ -1,16 +1,5 @@
 
 export default class Terminal {
-  lineClass = 'terminal-line';
-  inputLineClass = 'terminal-input';
-  outputLineClass = 'terminal-output';
-  highlightClass = 'terminal-highlight';
-  normalTextClass = 'terminal-normal';
-
-  closedClass = 'terminal-closed';
-  closingClass = 'terminal-closing';
-  openClass = 'terminal-opened';
-  openingClass = 'terminal-opening';
-
   classes = {
     // core classes
     container: 'terminal-container',
@@ -34,6 +23,8 @@ export default class Terminal {
     width: '--terminal-width',
   };
 
+  keySounds = [];
+
 
   constructor({
     columns,
@@ -43,6 +34,11 @@ export default class Terminal {
     const $body = $('body');
     const $terminalContainer = $('<div>');
     const $terminal = $('<section>');
+
+    // preload keypress sounds
+    for (let i = 0; i < 37; i++) {
+      this.keySounds.push(new Audio(`./keypresses/key${i + 1}.wav`));
+    }
 
     const { classes, vars } = this;
     $terminalContainer.addClass(classes.container).addClass(classes.closed);
@@ -65,6 +61,10 @@ export default class Terminal {
     this.addInputLine();
   }
 
+  play(ndx) {
+    this.keySounds[ndx].play();
+  }
+
   var(varName) {
     if (!this.vars[varName]) {
       console.error('varName %o not recognized!', varName);
@@ -74,21 +74,23 @@ export default class Terminal {
   }
 
   getNewLine() {
-    return $('<pre>').addClass(this.lineClass);
+    return $('<pre>').addClass(this.classes.line);
   }
 
   // inserts the line element and returns it
   addInputLine() {
-    const $newLine = this.getNewLine().addClass(this.inputLineClass);
+    const $newLine = this.getNewLine().addClass(this.classes.inputLine);
     return this.$terminal.append($newLine);
   }
 
   // expects there to be a trailing input line
   async addInput(text) {
     const gen = this.typeGen(text);
-    const $line = $(`.${this.inputLineClass}:last-of-type`);
+    const $line = $(`.${this.classes.inputLine}:last-of-type`);
 
     for await (let str of gen) {
+      const keyIndex = Math.floor(Math.random() * this.keySounds.length);
+      this.keySounds[keyIndex].play();
       $line.html(this.normalText(str));
     }
   }
@@ -105,7 +107,7 @@ export default class Terminal {
     const cleanOutput = output.trim().replaceAll(/\s+/g, ' ');
 
     const $code = $('<code>');
-    const $newLine = this.getNewLine().addClass(this.outputLineClass).append($code);
+    const $newLine = this.getNewLine().addClass(this.classes.outputLine).append($code);
 
     $code.append(
       $.parseHTML(cleanOutput).map((el) => {
@@ -121,11 +123,11 @@ export default class Terminal {
   }
 
   highlight(text) {
-    return `<span class="${this.highlightClass}">${text}</span>`;
+    return `<span class="${this.classes.highlight}">${text}</span>`;
   }
 
   normalText(text) {
-    return `<span class="${this.normalTextClass}">${text}</span>`;
+    return `<span class="${this.classes.normalText}">${text}</span>`;
   }
 
   /**
@@ -181,14 +183,14 @@ export default class Terminal {
   open(delay = 0) {
     return new Promise((resolve) => {
       this.$terminalContainer.one('animationend', () => {
-        this.$terminalContainer.removeClass(this.openingClass).addClass(this.openClass);
+        this.$terminalContainer.removeClass(this.classes.opening).addClass(this.classes.open);
         resolve();
       });
 
       setTimeout(() => {
         this.$terminalContainer
-          .removeClass(this.closedClass)
-          .addClass(this.openingClass);
+          .removeClass(this.classes.closed)
+          .addClass(this.classes.opening);
       }, delay);
     });
   }
@@ -196,14 +198,14 @@ export default class Terminal {
   close(delay = 0) {
     return new Promise((resolve) => {
       this.$terminalContainer.one('animationend', () => {
-        this.$terminalContainer.removeClass(this.closingClass).addClass(this.closedClass);
+        this.$terminalContainer.removeClass(this.classes.closing).addClass(this.classes.closed);
         resolve();
       });
 
       setTimeout(() => {
         this.$terminalContainer
-          .removeClass(this.openClass)
-          .addClass(this.closingClass);
+          .removeClass(this.classes.open)
+          .addClass(this.classes.closing);
       }, delay);
     });
 
