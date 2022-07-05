@@ -1,5 +1,5 @@
-import Stdin from './stdin.mjs';
-import Stdout from './stdout.mjs';
+import Stdin from './components/Terminal/stdin.mjs';
+import Stdout from './Stdout.mjs';
 
 
 class Terminal {

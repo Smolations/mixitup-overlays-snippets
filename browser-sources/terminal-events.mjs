@@ -131,7 +131,7 @@ terminal.session(
   terminal.command(
     terminal.stdin('typed input then a long-running process followed by more input'),
     terminal.stdout(async ($stdoutLine) => {
-      for (some loop) {
+      for (await some of loop) {
         $stdoutLine.html('update on timeout/interval');
       }
 
@@ -142,8 +142,20 @@ terminal.session(
 
     terminal.stdin('followup input'),
     terminal.stdout('that be it'),
+    terminal.stdin(), // trailing blinking cursor
   ),
 );
+
+// .session() expects all commands so can trail with prompt
+// what if session has no args? probs wouldn't happen but....
+
+//stdin/out somehow just represent the elements so .command() can use them..
+
+// inside .command()
+// if Stdin
+//   await stdin.exec()
+// else if Stdout
+//   await stdout.exec()
 
 // terminal.stdin();
 // terminal.stdout();
