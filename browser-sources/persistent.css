@@ -1,20 +1,42 @@
-/* :root {
+:root {
   --terminal-height: 150px;
-  --terminal-width: 135px;
-} */
+  --terminal-width: calc(135px - var(--terminal-border-width));
 
-.terminal-container {
-  top: 0;
+  /* follow 3 edges */
+  --border-clip: polygon(0% 0%, 76% 0%, 98% 26%, 91% 67%, 51% 100%, 0% 100%);
+
+  /* follow 2 edges */
+  /* --border-clip: polygon(0% 0%, 98% 0%, 98% 26%, 90% 67%, 50% 100%, 0% 100%); */
+
+  /* follow 2 edges (alternate) */
+  /* --border-clip: polygon(0% 0%, 100% 0%, 88% 67%, 45% 100%, 0% 100%); */
+
+  /* follow 1 edge */
+  /* --border-clip: polygon(0% 0%, 100% 0%, 100% 67%, 59% 100%, 0% 100%); */
 }
 
+
+.fake-border-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: calc(var(--terminal-height) + 0.05 * var(--terminal-height));
+  width: calc(var(--terminal-width) + 0.05 * var(--terminal-width));
+
+  background-color: var(--battletech-grey);
+  clip-path: var(--border-clip);
+}
+
+/* (terminal-container) */
 .monogram-container {
   position: absolute;
   top: 0;
   left: 0;
-  height: 150px;
-  width: 135px;
-  border-bottom-right-radius: 90px;
   border-left: none;
+  /* border-bottom-right-radius: 90px; */
+
+  /* border: none; */
+  /* clip-path: var(--border-clip); */
 
   /* --aug-clip-br1: initial;
   --aug-clip-br2: initial;
