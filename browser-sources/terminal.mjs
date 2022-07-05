@@ -1,5 +1,8 @@
+import Stdin from './stdin.mjs';
+import Stdout from './stdout.mjs';
 
-export default class Terminal {
+
+class Terminal {
   classes = {
     // core classes
     container: 'terminal-container',
@@ -208,3 +211,11 @@ export default class Terminal {
 
   }
 }
+
+
+export default Terminal;
+
+export {
+  Stdin,
+  Stdout,
+};

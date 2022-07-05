@@ -15,7 +15,7 @@
   --terminal-bg-color: rgba(0, 0, 0, 0.75);
   --terminal-highlight-color: var(--reentry-orange);
 
-  --terminal-font-size: 32px;
+  --terminal-font-size: 32px; /* 32px is 100cols at 1080p */
   --terminal-line-horizontal-padding: 1ch;
   --terminal-line-vertical-padding: calc(0.15 * var(--terminal-font-size));
   --terminal-border-width: calc(0.25 * var(--terminal-font-size));
