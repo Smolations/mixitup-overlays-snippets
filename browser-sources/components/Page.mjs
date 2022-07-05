@@ -19,7 +19,10 @@ export default class Page {
   #promise;
 
 
-  constructor({ css = [], js = [] } = {}) {
+  constructor({ assets = [] } = {}) {
+    const css = assets.filter((asset) => /\.css$/.test(asset));
+    const js = assets.filter((asset) => /\.m?js$/.test(asset));
+
     const promise = this.#loadJquery()
       .then(() => this.#loadCss(this.#defaultCss))
       .then(() => this.#loadJs(this.#defaultJs))
@@ -33,7 +36,9 @@ export default class Page {
 
 
   ready(callback) {
-    this.#promise.then(callback);
+    this.#promise.then(() => {
+      $(document).ready(callback);
+    });
   }
 
 

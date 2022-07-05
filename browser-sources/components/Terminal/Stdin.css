@@ -1,0 +1,33 @@
+.Stdin {
+  filter: var(--glow-white) var(--glow-white) brightness(1.5);
+}
+
+/* prompt character(s) */
+.Stdin::before {
+  content: "$";
+  padding: 0 1ch 0 0;
+  /* filter: var(--glow-white) var(--glow-white) brightness(1.5); */
+}
+
+/* trailing cursor */
+.Stdin:last-child::after {
+  content: "\2593";
+  padding-left: 0.1em; /* needs var? */
+  /* filter: var(--glow-white) var(--glow-white) brightness(1.5); */
+  animation: 0.6s cursor-blink infinite;
+}
+
+/* when blinking on empty line */
+.Stdin:last-of-type:empty::after {
+  padding-left: 0;
+}
+
+@keyframes cursor-blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
