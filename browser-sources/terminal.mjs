@@ -61,9 +61,6 @@ export default class Terminal {
     this.addInputLine();
   }
 
-  play(ndx) {
-    this.keySounds[ndx].play();
-  }
 
   var(varName) {
     if (!this.vars[varName]) {

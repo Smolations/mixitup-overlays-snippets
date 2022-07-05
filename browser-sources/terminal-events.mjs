@@ -59,6 +59,20 @@ async function processNewSubscriber(terminal, params) {
   terminal.close(5000);
 }
 
+// ?subject=raid&username=SneakyFoxtrot&raidCount=7
+async function processRaid(terminal, params) {
+  const username = params.get('username');
+  const raidCount = params.get('raidCount');
+
+  await terminal.open();
+  await terminal.command(
+    'raid --welcome',
+    terminal.printf('oh damn! %h just raided with %h viewers! shit, are my genitals showing?', username, raidCount),
+  );
+
+  terminal.close(5000);
+}
+
 
 /**
  * ENTRY
@@ -81,6 +95,10 @@ $(document).ready(async () => {
 
     case 'newSubscriber':
       processNewSubscriber(...params);
+      break;
+
+    case 'raid':
+      processRaid(...params);
       break;
   }
 });
