@@ -25,27 +25,94 @@ page.ready(async () => {
   const follower = queryParams.get('follower');
   const subscriber = queryParams.get('subscriber');
 
-  const two = sparks({
-    top: 0,
-    left: $('body').width() - (438 + 20),
-    rotation: (0.05 * Math.PI),
+  function getRandomTime(max, delay = 300) {
+    return Math.floor(Math.random() * (max - delay)) + delay;
+  }
+
+  function getRandomRotation(max) {
+    const sign = (Math.random() < 0.5) ? -1 : 1;
+    const radians =  (Math.random() * max) * Math.PI;
+    return (sign * radians);
+  }
+
+  const twoLeft = sparks({
+    top: -5,
+    left: terminal.rect.left,
+    rotation: getRandomRotation(0.1),
     speed: 60,
   });
-  const $canvas = $(two.renderer.domElement);
-  const times = [];
+  const $canvasLeft = $(twoLeft.renderer.domElement);
 
-  $canvas.css('opacity', 0);
+  const twoRight = sparks({
+    top: -5,
+    left: terminal.rect.left + terminal.rect.width,
+    rotation: getRandomRotation(0.1),
+    speed: 60,
+  });
+  const $canvasRight = $(twoRight.renderer.domElement);
+
+  const times = [];
+  const rotations = [];
+
+  $('body').css('background-color', 'black'); // just to see the effects
+
+  const $glareLeft = $('<div>')
+    .css({
+      position: 'absolute',
+      top: 0 - 40,
+      left: terminal.rect.left - 40,
+      width: '80px',
+      height: '80px',
+      opacity: 0,
+      borderRadius: '40px',
+      background: 'radial-gradient(rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0))',
+    })
+    .appendTo($('body'));
+
+  const $glareRight = $glareLeft.clone()
+    .css({
+      left: terminal.rect.left + terminal.rect.width - 40,
+    })
+    .appendTo($('body'));
+
+  $canvasLeft.css('opacity', 0);
+  $canvasRight.css('opacity', 0);
 
   for (let i = 0; i < 6; i++) {
-    const delay = 300;
-    const time = Math.floor(Math.random() * (3000 - delay)) + delay;
+    const time = getRandomTime(3000);
+    const rotation = getRandomRotation(0.1);
+    // console.log(rotation)
+
+    // will copy/reverse these and choose with i for the other side
+    times.push(time);
+    rotations.push(rotation);
+  }
+
+  console.log('rotations: %o', rotations)
+  for (let i = 0; i < 6; i++) {
+    const leftRotation = rotations[i];
+    const rightRotation = rotations[5-i];
+    setTimeout(() => {
+      twoLeft.scene.rotation = leftRotation;console.log('left rotation[%o]: %o',i, leftRotation)
+      $canvasLeft.css('opacity', 1);
+      $glareLeft.css('opacity', 1);
+
+      setTimeout(() => {
+        $canvasLeft.css('opacity', 0);
+        $glareLeft.css('opacity', 0);
+      }, 100);
+    }, times[i]);
 
     setTimeout(() => {
-      $canvas.css('opacity', 1);
+      twoRight.scene.rotation = rightRotation; console.log('right rotation[%o]: %o',5-i, rightRotation)
+      $canvasRight.css('opacity', 1);
+      $glareRight.css('opacity', 1);
+
       setTimeout(() => {
-        $canvas.css('opacity', 0);
+        $canvasRight.css('opacity', 0);
+        $glareRight.css('opacity', 0);
       }, 100);
-    }, time);
+    }, times[5 - i]);
   }
 
 

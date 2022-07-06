@@ -31,6 +31,11 @@ class Terminal {
   #sessionLines = [];
 
 
+  get rect() {
+    return this.$terminalContainer[0].getBoundingClientRect();
+  }
+
+
   constructor({
     columns = 10,
     rows = 2,
