@@ -4,9 +4,11 @@ export default class TerminalLine {
     './components/Terminal/TerminalLine.css',
   ];
 
-  constructor() {
+  constructor(terminal) {
     this.$el = $('<pre>');
     this.$el.addClass('TerminalLine');
+
+    this.terminal = terminal;
   }
 
   render() {

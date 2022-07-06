@@ -11,8 +11,8 @@ export default class Stdin extends TerminalLine {
   #input = '';
 
 
-  constructor() {
-    super();
+  constructor(...args) {
+    super(...args);
 
 
     // this.$el = $('<pre>');

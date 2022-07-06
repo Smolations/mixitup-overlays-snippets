@@ -12,8 +12,8 @@ export default class Stdout extends TerminalLine {
   #output;
 
 
-  constructor() {
-    super();
+  constructor(...args) {
+    super(...args);
 
     this.$el.addClass('Stdout');
   }
@@ -65,7 +65,7 @@ export default class Stdout extends TerminalLine {
   }
 
   // @returns {jQuery}
-  $getOutputEl(...args) {
+  $getTerminalLine(...args) {
     const $code = $('<code>');
     $code.append(this.prepareText(...args));
 

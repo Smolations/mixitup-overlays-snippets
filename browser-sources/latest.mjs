@@ -1,6 +1,8 @@
 import Page from './components/Page.mjs';
 import Terminal from './components/Terminal/Terminal.mjs';
 
+import StdoutMarquee from './lib/terminal-plugins/stdout-marquee.mjs';
+
 
 const page = new Page({
   assets: [
@@ -31,34 +33,10 @@ page.ready(async () => {
 
   await terminal.command(
     terminal.stdin('marquee --latest'),
-    terminal.stdout((stdout, resolve) => {
-      const $output = stdout.$getOutputEl('follower: %h subscriber: %h', follower, subscriber);
-      const numCols = terminal.var('columns');
-      const numChars = $output.text().length;
-      const maxRenders = 2;
-      let renderCount = 1;
-      let leftCount = numCols;
-
-      stdout.$el.append($output);
-
-      stdout.$el
-        .css('left', `${numCols}ch`)
-        .addClass('Terminal--marquee');
-
-      const interval = setInterval(() => {
-        stdout.$el.css('left', `${--leftCount}ch`);
-
-        if (leftCount < -numChars - 1) {
-          if (renderCount++ < maxRenders) {
-            leftCount = numCols;
-            stdout.$el.css('left', `${numCols}ch`);
-          } else {
-            clearInterval(interval);
-            resolve();
-          }
-        }
-      }, 200);
-    }),
+    terminal.stdout(StdoutMarquee({
+      numRenders: 3,
+      stdoutArgs: ['follower: %h subscriber: %h', follower, subscriber],
+    })),
   );
 
   terminal.close();

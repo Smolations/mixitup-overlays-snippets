@@ -81,7 +81,7 @@ class Terminal {
   // passthrough for now..
   // @returns {Stdout}
   stdout(...args) {
-    const stdout = new Stdout();
+    const stdout = new Stdout(this);
     return stdout.output(...args);
   }
 
@@ -110,7 +110,7 @@ class Terminal {
   }
 
   addPrompt() {
-    const stdin = new Stdin();
+    const stdin = new Stdin(this);
 
     this.addTerminalLine(stdin);
 
