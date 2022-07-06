@@ -11,6 +11,26 @@ export default class Sparks {
     ]
   }
 
+  get left() {
+    return this.getOptValueOrRandom('left');
+  }
+
+  get top() {
+    return this.getOptValueOrRandom('top');
+  }
+
+  // get rotation() {
+  //   return this.getOptValueOrRandom('rotation');
+  // }
+
+  get scaleFactor() {
+    return this.getOptValueOrRandom('scaleFactor');
+  }
+
+  get sparkDuration() {
+    return this.getOptValueOrRandom('sparkDuration');
+  }
+
 
   /**
    * @param {Object} opts
@@ -24,11 +44,13 @@ export default class Sparks {
     this.opts = {
       amount: 60,
       speed: 120,
-      duration: 3000,
       frequency: 6,
+      duration: 3000,
+      sparkDuration: 500,
       rotation: 0,
       rotationVariation: 0.1,
-      scale: 1,
+      scaleFactor: 1,
+      startDelay: 0, // does not affect overall duration
       fullscreen: true,
       autostart: false,
       ...opts,
@@ -55,7 +77,14 @@ export default class Sparks {
     }
   }
 
-  getRandomTime(max = this.opts.duration, delay = 300) {
+  /**
+   * @param {Number} [max=opts.duration] in milliseconds
+   * @param {Number} [delay=opts.startDelay] in milliseconds
+   */
+  getRandomTime(
+    max = this.opts.duration,
+    delay = this.opts.startDelay,
+  ) {
     return Math.floor(Math.random() * (max - delay)) + delay;
   }
 
@@ -71,6 +100,35 @@ export default class Sparks {
     const variationValue = (sign * Math.random() * variation);
 
     return (variationValue + radians);
+  }
+
+  /**
+   * @param {Number} min
+   * @param {Number} max
+   */
+  getRandomNumber(min, max) {
+    const diff = (max - min);
+    const randomDiff = Math.floor(Math.random() * diff);
+
+    return (min + randomDiff);
+  }
+
+  // alternative to a *Variation opt for vars
+  // @todo set up for rotation opt
+  // @param {String} optName the name of the option matching constructor opts
+  getOptValueOrRandom(optName) {
+    if (!(optName in this.opts)) {
+      throw new Error(`No option named ${optName} exists!`);
+    }
+
+    let value = this.opts[optName];
+
+    if (Array.isArray(value)) {
+      // type checking?
+      value = this.getRandomNumber(...value);
+    }
+    console.log('optValueOrRandom(%o) => %o', optName, value);
+    return value;
   }
 
   // @todo "squeeze" element via transform to better match shape of sparks
@@ -90,7 +148,6 @@ export default class Sparks {
         left: this.opts.left - (scaledWidth / 2),
         width: `${scaledWidth}px`,
         height: `${scaledWidth}px`,
-        opacity: 0,
         borderRadius: `${(scaledWidth / 2)}px`,
         background: `radial-gradient(${radialGradient})`,
       });
@@ -164,9 +221,9 @@ export default class Sparks {
       }
 
       // debug..
-      if (j < 3) {
-        console.log(points.map((point) => point.toObject()));
-      }
+      // if (j < 3) {
+      //   console.log(points.map((point) => point.toObject()));
+      // }
 
       const curve = this.two.makeCurve(points, true);
 
@@ -182,22 +239,29 @@ export default class Sparks {
   }
 
   prepareScene() {
-    this.$canvas.css('background', 'transparent'); // as overlay
-    this.$glare.appendTo('body');
+    this.$canvas.css({
+      background: 'transparent',
+      opacity: 0,
+    }); // as overlay
+    this.$glare.css({ opacity: 0 }).appendTo('body');
 
     // ?
     this.two.renderer.ctx.globalCompositeOperation = 'screen';
 
     this.generateSparkCurves().forEach((curve) => this.two.add(curve));
     // could eventually use css variables to location panel edges
-    this.translate(this.opts.left, this.opts.top);
+    this.translate(this.left, this.top);
     this.rotate(this.getRandomRotation());
-    this.scale(this.opts.scale);
+    this.scale(this.scaleFactor);
     this.setUpdateBehavior();
   }
 
-  // could also randomize top/left positions if arrays provided as opts
-  // @todo add a maxSparkDuration opt
+  /**
+   * @param {Object} opts
+   * @property {Number} opts.frequency number of times a spark occurs within the
+   *                                   duration - delay; usually a small integer.
+   * @property {Number} opts.duration  total duration where sparking can occur.
+   */
   generateRandomSparking({
     frequency = this.opts.frequency,
     duration = this.opts.duration,
@@ -205,10 +269,17 @@ export default class Sparks {
     for (let i = 0; i < frequency; i++) {
       const time = this.getRandomTime(duration);
       const rotation = this.getRandomRotation();
-      const sparkDuration = 100; // generate random value from opt
+      const sparkDuration = this.sparkDuration;
+
+      // need to make sure sparks don't step on each other's toes since we're
+      // just hiding/showing a continuous animation. random times should be added
+      // to the random durations and there should be no overlap
+
 
       setTimeout(() => {
         this.rotate(rotation);
+        this.scale(this.scaleFactor);
+        this.translate(this.left, this.top);
         this.$canvas.css('opacity', 1);
         this.$glare.css('opacity', 1);
 

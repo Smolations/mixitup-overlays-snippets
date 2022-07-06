@@ -21,40 +21,40 @@ const page = new Page({
 page.ready(async () => {
   const queryParams = new URLSearchParams(window.location.search);
   const terminal = new Terminal({ rows: 2, columns: 20 });
+  window.terminal = terminal;
 
   const follower = queryParams.get('follower');
   const subscriber = queryParams.get('subscriber');
 
-  function getRandomTime(max, delay = 300) {
-    return Math.floor(Math.random() * (max - delay)) + delay;
-  }
-
-  function getRandomRotation(max) {
-    const sign = (Math.random() < 0.5) ? -1 : 1;
-    const radians =  (Math.random() * max) * Math.PI;
-    return (sign * radians);
-  }
 
   // this fixes the terminal sizing problem... somehow...browser paint-related?
   await new Promise((resolve) => setTimeout(resolve, 100));
 
   const mySparks = new Sparks({
     top: -5,
-    left: terminal.rect.left + 100,
-    speed: 60,
-    scale: 0.6,
+    left: [terminal.rect.left + 100, terminal.rect.left + 300],
+    speed: 80,
+    scaleFactor: [0.2, 0.4],
+    sparkDuration: [100, 1000],
+    frequency: 4,
   });
 
   const sparksLeft = new Sparks({
     top: -5,
     left: terminal.rect.left,
     speed: 60,
+    scaleFactor: [0.6, 0.8],
+    sparkDuration: [100, 1000],
+    frequency: 4,
   });
 
   const sparksRight = new Sparks({
     top: -5,
     left: terminal.rect.left + terminal.rect.width,
-    speed: 60,
+    speed: 30,
+    scaleFactor: [0.6, 0.8],
+    sparkDuration: [100, 1000],
+    frequency: 4,
   });
 
 
@@ -71,7 +71,7 @@ page.ready(async () => {
 
   // maybe join marquee runs together (no fully empty space except on start/finish)
 
-  window.terminal = terminal;
+
   console.log('terminal.rect.left (pre-open): %o', terminal.rect.left)
   console.log('terminal.rect.width (pre-open): %o', terminal.rect.width)
   // console.log('test.rect.left (pre-open): %o', $test[0].getBoundingClientRect().left)
