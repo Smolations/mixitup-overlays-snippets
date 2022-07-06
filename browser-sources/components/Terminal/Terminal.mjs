@@ -11,13 +11,13 @@ class Terminal {
 
   classes = {
     // core classes
-    container: 'terminal-container',
-    terminal: 'terminal',
+    container: 'Terminal--container',
+    terminal: 'Terminal',
     // animation classes
-    closed: 'terminal-closed',
-    closing: 'terminal-closing',
-    open: 'terminal-opened',
-    opening: 'terminal-opening',
+    closed: 'Terminal--closed',
+    closing: 'Terminal--closing',
+    open: 'Terminal--opened',
+    opening: 'Terminal--opening',
   };
 
   vars = {

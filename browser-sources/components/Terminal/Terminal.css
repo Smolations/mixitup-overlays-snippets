@@ -59,7 +59,7 @@ body {
   outline: 1px solid red;
 }
 
-.terminal-container {
+.Terminal--container {
   box-sizing: border-box;
   position: relative;
 
@@ -86,7 +86,7 @@ body {
 }
 
 
-.terminal {
+.Terminal {
   box-sizing: border-box;
   position: absolute;
   bottom: 0;
@@ -106,19 +106,19 @@ body {
   animation: terminal-drift 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0);
 }
 
-.terminal-opening {
+.Terminal--opening {
   animation: 3s ease-in terminal-open;
 }
 
-.terminal-opened {
+.Terminal--opened {
   transform: var(--terminal-opened-transform);
 }
 
-.terminal-closing {
+.Terminal--closing {
   animation: 2s ease-out terminal-close;
 }
 
-.terminal-closed {
+.Terminal--closed {
   transform: var(--terminal-closed-transform);
 }
 

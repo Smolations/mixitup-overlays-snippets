@@ -43,7 +43,7 @@ page.ready(async () => {
 
       stdout.$el
         .css('left', `${numCols}ch`)
-        .addClass('terminal-marquee');
+        .addClass('Terminal--marquee');
 
       const interval = setInterval(() => {
         stdout.$el.css('left', `${--leftCount}ch`);

@@ -1,22 +1,12 @@
-:root {
-  /* --terminal-height: 9em; */
-  /* --terminal-width: 30%; */
-}
-
-
-.terminal-container {
+.Terminal--container {
   position: absolute;
   right: 1ch;
 }
 
-.terminal-marquee {
+.Terminal--marquee {
   position: relative;
 }
 
 code, pre {
   white-space: pre;
-}
-
-.terminal-line.terminal-output:last-child::after {
-  content: '';
 }
