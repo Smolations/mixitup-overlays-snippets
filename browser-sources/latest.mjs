@@ -1,5 +1,6 @@
 import Page from './components/Page.mjs';
 import Terminal from './components/Terminal/Terminal.mjs';
+import sparks from './components/Terminal/sparks.mjs';
 
 import StdoutMarquee from './lib/terminal-plugins/stdout-marquee.mjs';
 
@@ -23,6 +24,30 @@ page.ready(async () => {
 
   const follower = queryParams.get('follower');
   const subscriber = queryParams.get('subscriber');
+
+  const two = sparks({
+    top: 0,
+    left: $('body').width() - (438 + 20),
+    rotation: (0.05 * Math.PI),
+    speed: 60,
+  });
+  const $canvas = $(two.renderer.domElement);
+  const times = [];
+
+  $canvas.css('opacity', 0);
+
+  for (let i = 0; i < 6; i++) {
+    const delay = 300;
+    const time = Math.floor(Math.random() * (3000 - delay)) + delay;
+
+    setTimeout(() => {
+      $canvas.css('opacity', 1);
+      setTimeout(() => {
+        $canvas.css('opacity', 0);
+      }, 100);
+    }, time);
+  }
+
 
   // maybe join marquee runs together (no fully empty space except on start/finish)
   // ALSO, fix width jitter bug..  =/

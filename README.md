@@ -20,7 +20,7 @@ todo:
 - [ ] fine tune new sub event using special event identifiers
 - [ ] figure out quick displays of stream-specific commands (e.g. !wut)
   - should this be marquee'd?
-- [ ] fix monogram size in terminal events and maybe width
+- [x] fix monogram size in terminal events and maybe width
 - [~] find sounds for terminal stuffs
   - [x] keypresses for terminal input
   - [ ] panel movement

@@ -40,6 +40,10 @@ export default class Javascript {
     const $script = $('<script>');
     const type = isModule ? 'module' : 'application/javascript';
 
+    // if (src.startsWith('http')) {
+    //   $script.attr('crossorigin', 'anonymous');
+    // }
+
     $script.attr('type', type);
 
     return $script;
