@@ -51,12 +51,12 @@ export default class Stdout extends TerminalLine {
 
 
     if (typeof(lastOutputArg) === 'function') {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         lastOutputArg(this, resolve);
       });
     } else {
-      return new Promise((resolve, reject) => {
-        const $code = this.$getOutputEl(...this.#output);
+      return new Promise((resolve) => {
+        const $code = this.$getTerminalLine(...this.#output);
 
         this.$el.append($code);
         resolve();

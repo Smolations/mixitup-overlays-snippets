@@ -5,13 +5,14 @@ import Terminal from './components/Terminal/Terminal.mjs';
 const page = new Page({
   assets: [
     ...Terminal.assets,
-    './terminal-bare.css',
+    './terminal-events.css',
   ],
 });
 
 
 // ?subject=drive&username=chode&name=PNY 1kb drive&base=37&bonus=13&target=bytes
-async function processDrive(terminal, params) {
+async function processDrive(params) {
+  const terminal = new Terminal({ rows: 6, columns: 40 });
   const sanitizedName = params.get('name').toLowerCase().replaceAll(' ', '_');
   const username = params.get('username');
   const bytesBase = Number(params.get('base'));
@@ -40,7 +41,8 @@ async function processDrive(terminal, params) {
 }
 
 // ?subject=newFollower&username=poob
-async function processNewFollower(terminal, params) {
+async function processNewFollower(params) {
+  const terminal = new Terminal({ rows: 5, columns: 40 });
   const username = params.get('username');
 
   await terminal.open();
@@ -54,7 +56,8 @@ async function processNewFollower(terminal, params) {
 }
 
 // ?subject=newSubscriber&username=poob
-async function processNewSubscriber(terminal, params) {
+async function processNewSubscriber(params) {
+  const terminal = new Terminal({ rows: 5, columns: 40 });
   const username = params.get('username');
   const formatStr = `
     %h, your credits have been accepted. enjoy your new esmojis and this
@@ -72,7 +75,8 @@ async function processNewSubscriber(terminal, params) {
 }
 
 // ?subject=raid&username=SneakyFoxtrot&raidCount=7
-async function processRaid(terminal, params) {
+async function processRaid(params) {
+  const terminal = new Terminal({ rows: 5, columns: 40 });
   const username = params.get('username');
   const raidCount = params.get('raidCount');
 
@@ -98,24 +102,22 @@ async function processRaid(terminal, params) {
  */
 page.ready(async () => {
   const queryParams = new URLSearchParams(window.location.search);
-  const terminal = new Terminal();
-  const params = [terminal, queryParams];
 
   switch (queryParams.get('subject')) {
     case 'drive':
-      processDrive(...params);
+      processDrive(queryParams);
       break;
 
     case 'newFollower':
-      processNewFollower(...params);
+      processNewFollower(queryParams);
       break;
 
     case 'newSubscriber':
-      processNewSubscriber(...params);
+      processNewSubscriber(queryParams);
       break;
 
     case 'raid':
-      processRaid(...params);
+      processRaid(queryParams);
       break;
   }
 });

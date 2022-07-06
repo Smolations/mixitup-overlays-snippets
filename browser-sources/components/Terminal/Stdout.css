@@ -1,4 +1,6 @@
-/* .Stdout {} */
+.Stdout {
+  line-height: 1.1;
+}
 
 .Stdout--normal {
   filter: var(--glow-white) var(--glow-white) brightness(1.5);
