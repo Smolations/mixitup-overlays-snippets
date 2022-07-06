@@ -47,7 +47,7 @@
   --aug-border-bg: pink; */
 }
 
-.monogram-container > .terminal {
+.monogram-container > .Terminal {
   height: 100%;
 }
 
@@ -56,9 +56,11 @@
   top: 3%;
   left: 8%;
   height: 95%;
+
+  filter: var(--glow-highlight) var(--glow-highlight) brightness(1.5);
 }
 
-.latest-container {
+/* .latest-container {
   position: absolute;
   top: 0;
   right: 0;
@@ -70,4 +72,4 @@
 .latest-container code {
   height: 1em;
   white-space: pre;
-}
+} */

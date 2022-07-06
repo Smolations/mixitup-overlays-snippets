@@ -34,7 +34,7 @@ class Terminal {
     columns = 10,
     rows = 2,
     location = [2, 1],  // ?  (top middle in 3x3; y-axis inverted)
-    initialLine = true,
+    prompt = true,
   } = {}) {
     const { classes, vars } = this;
 
@@ -60,7 +60,7 @@ class Terminal {
     this.$terminal = $terminal;
 
     // terminals usually start up with an empty line
-    if (initialLine) {
+    if (prompt) {
       this.addPrompt();
     }
   }
