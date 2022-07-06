@@ -38,58 +38,52 @@ export default class Stdout extends TerminalLine {
     ), line);
   }
 
+  // set desired output for later
+  // @returns {Stdout}
   output(...args) {
     this.#output = args;
     return this;
   }
 
-  // creates all required markup for a single call to stdout (one liner)
-  addOutput(output) {
-    const isOutputNil = (output === undefined || output === null);
-    const stringText = String(output);
+  // printf only works here for output
+  render() {
+    const lastOutputArg = this.#output.at(-1); // or check for only function?
 
-    if (isOutputNil || !stringText) {
-      return;
+
+    if (typeof(lastOutputArg) === 'function') {
+      return new Promise((resolve, reject) => {
+        lastOutputArg(this, resolve);
+      });
+    } else {
+      return new Promise((resolve, reject) => {
+        const $code = this.$getOutputEl(...this.#output);
+
+        this.$el.append($code);
+        resolve();
+      });
     }
+  }
 
-    const cleanOutput = output.trim().replaceAll(/\s+/g, ' ');
-
+  // @returns {jQuery}
+  $getOutputEl(...args) {
     const $code = $('<code>');
-    const $newLine = this.getNewLine().addClass(this.classes.outputLine).append($code);
+    $code.append(this.prepareText(...args));
 
-    $code.append(
-      $.parseHTML(cleanOutput).map((el) => {
+    return $code;
+  }
+
+  // @returns {String} the html string
+  prepareText(...args) {
+    const highlighted = this.printf(...args);
+    const wrappedArray = $.parseHTML(highlighted)
+      .map((el) => {
         if (el.nodeName === '#text') {
           return $(this.#normalText(el.textContent));
         } else {
           return el;
         }
-      })
-    );
+      });
 
-    this.$terminal.append($newLine);
-  }
-
-  // printf only works here for output
-  render() {
-    return new Promise((resolve, reject) => {
-      const $code = $('<code>');
-      const highlighted = this.printf(...this.#output);
-      console.log('highlighted: %o', highlighted)
-
-      $code.append(
-        $.parseHTML(highlighted).map((el) => {
-          if (el.nodeName === '#text') {
-            return $(this.#normalText(el.textContent));
-          } else {
-            return el;
-          }
-        })
-      );
-
-      this.$el.append($code);
-
-      resolve();
-    });
+    return $('<div>').append(wrappedArray).html();
   }
 }

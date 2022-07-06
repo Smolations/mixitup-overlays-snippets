@@ -49,17 +49,6 @@ body {
 }
 
 
-@keyframes terminal-drift {
-  0% {
-    -webkit-mask-position: 0 0;
-    mask-position: 0 0;
-  }
-  100% {
-    -webkit-mask-position: 0 var(--terminal-height);
-    mask-position: 0 var(--terminal-height);
-  }
-}
-
 .debug {
   position: fixed;
   right: 0;
@@ -117,18 +106,34 @@ body {
   animation: terminal-drift 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0);
 }
 
+.terminal-opening {
+  animation: 3s ease-in terminal-open;
+}
 
-/* .terminal-normal {
-  color: var(--terminal-color);
-  filter: var(--glow-white) var(--glow-white) brightness(1.5);
-} */
+.terminal-opened {
+  transform: var(--terminal-opened-transform);
+}
 
-/* .terminal-highlight {
-  color: var(--reentry-orange);
-  filter: var(--glow-highlight) var(--glow-highlight) brightness(1.5);
-} */
+.terminal-closing {
+  animation: 2s ease-out terminal-close;
+}
+
+.terminal-closed {
+  transform: var(--terminal-closed-transform);
+}
 
 
+@keyframes terminal-drift {
+  0% {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+
+  100% {
+    -webkit-mask-position: 0 var(--terminal-height);
+    mask-position: 0 var(--terminal-height);
+  }
+}
 
 /**
  * opening/closing animations
@@ -163,20 +168,4 @@ body {
   100% {
     transform: var(--terminal-closed-transform);
   }
-}
-
-.terminal-opening {
-  animation: 3s ease-in terminal-open;
-}
-
-.terminal-opened {
-  transform: var(--terminal-opened-transform);
-}
-
-.terminal-closing {
-  animation: 2s ease-out terminal-close;
-}
-
-.terminal-closed {
-  transform: var(--terminal-closed-transform);
 }

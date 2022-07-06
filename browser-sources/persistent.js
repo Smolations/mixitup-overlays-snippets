@@ -1,4 +1,13 @@
-import Terminal from './terminal';
+import Page from './components/Page.mjs';
+import Terminal from './components/Terminal/Terminal.mjs';
+
+
+const page = new Page({
+  assets: [
+    ...Terminal.assets,
+    './persistent.css',
+  ],
+});
 
 
 // ?subject=newSubscriber&username=poob
@@ -24,22 +33,6 @@ async function processNewSubscriber(terminal, params) {
  *
  * Determine subject for processing.
  */
-$(document).ready(async () => {
-  const queryParams = new URLSearchParams(window.location.search);
-  const terminal = new Terminal();
-  const params = [terminal, queryParams];
-
-  switch (queryParams.get('subject')) {
-    case 'drive':
-      processDrive(...params);
-      break;
-
-    case 'newFollower':
-      processNewFollower(...params);
-      break;
-
-    case 'newSubscriber':
-      processNewSubscriber(...params);
-      break;
-  }
+page.ready(async () => {
+  // const terminal = new Terminal();
 });
