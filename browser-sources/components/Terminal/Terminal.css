@@ -64,7 +64,7 @@ body {
   position: relative;
 
   /* default to offscreen so that animation/transforms don't all need -1 * ... */
-  top: calc(-1 * (var(--terminal-height) + var(--terminal-offscreen-shift))+10px);
+  top: calc(-1 * (var(--terminal-height) + var(--terminal-offscreen-shift)));
 
   min-height: var(--terminal-height);
   height: var(--terminal-height);

@@ -119,6 +119,8 @@ export default class Sparks {
   }
 
 
+  // @todo need to start timer based on duration so that the
+  // scene can be paused afterwards
   play() {
     this.two.play();
     this.generateRandomSparking();
@@ -179,7 +181,6 @@ export default class Sparks {
     return curves;
   }
 
-  // maybe also add glare here?
   prepareScene() {
     this.$canvas.css('background', 'transparent'); // as overlay
     this.$glare.appendTo('body');
@@ -187,11 +188,8 @@ export default class Sparks {
     // ?
     this.two.renderer.ctx.globalCompositeOperation = 'screen';
 
-    const sparkCurves = this.generateSparkCurves();
-    sparkCurves.forEach((curve) => this.two.add(curve));
-
+    this.generateSparkCurves().forEach((curve) => this.two.add(curve));
     // could eventually use css variables to location panel edges
-    // this.getRandomRotation(0.1), // allow initial rotation and then variation
     this.translate(this.opts.left, this.opts.top);
     this.rotate(this.getRandomRotation());
     this.scale(this.opts.scale);
