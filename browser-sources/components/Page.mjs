@@ -1,3 +1,5 @@
+import Grid from './Grid/Grid.mjs';
+
 import Css from './Css.mjs';
 import Javascript from './Javascript.mjs';
 
@@ -19,14 +21,23 @@ export default class Page {
   #promise;
 
 
-  constructor({ assets = [] } = {}) {
-    const css = assets.filter((asset) => /\.css$/.test(asset));
-    const js = assets.filter((asset) => /\.m?js$/.test(asset));
+  constructor({ grid, assets = [] } = {}) {
+    const allAssets = grid ? [...assets, ...Grid.assets] : [...assets];
+
+    const css = allAssets.filter((asset) => /\.css$/.test(asset));
+    const js = allAssets.filter((asset) => /\.m?js$/.test(asset));
 
     const promise = this.#loadJquery()
       .then(() => this.#loadCss(this.#defaultCss))
       .then(() => this.#loadJs(this.#defaultJs))
       .then(() => Promise.all([this.#loadCss(css), this.#loadJs(js)]))
+      .then(() => {
+        if (grid) {
+          const [rows, cols] = grid;
+          this.grid = new Grid({ rows, cols });
+          return this.grid;
+        }
+      })
       .catch((err) => {
         throw err;
       });
@@ -36,10 +47,13 @@ export default class Page {
 
 
   ready(callback) {
-    this.#promise.then(() => {
-      $(document).ready(callback);
+    this.#promise.then((grid) => {
+      $(document).ready(() => callback(grid));
     });
   }
+
+
+  // addPanel() {}
 
 
   #loadCss(hrefs = []) {
