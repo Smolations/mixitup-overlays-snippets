@@ -1,4 +1,6 @@
 import Grid from './Grid/Grid.mjs';
+import GridRow from './Grid/GridRow.mjs';
+import GridCell from './Grid/GridCell.mjs';
 
 import Css from './Css.mjs';
 import Javascript from './Javascript.mjs';
@@ -22,7 +24,15 @@ export default class Page {
 
 
   constructor({ grid, assets = [] } = {}) {
-    const allAssets = grid ? [...assets, ...Grid.assets] : [...assets];
+    const allAssets = [...assets];
+
+    if (grid) {
+      allAssets.push(
+        ...Grid.assets,
+        ...GridRow.assets,
+        ...GridCell.assets,
+      );
+    }
 
     const css = allAssets.filter((asset) => /\.css$/.test(asset));
     const js = allAssets.filter((asset) => /\.m?js$/.test(asset));
@@ -33,9 +43,7 @@ export default class Page {
       .then(() => Promise.all([this.#loadCss(css), this.#loadJs(js)]))
       .then(() => {
         if (grid) {
-          const [rows, cols] = grid;
-          this.grid = new Grid({ rows, cols });
-          return this.grid;
+          return this.addGrid(...grid);
         }
       })
       .catch((err) => {
@@ -53,7 +61,32 @@ export default class Page {
   }
 
 
-  // addPanel() {}
+  /**
+   * allowing the Page to build the grid means there won't be an import chain
+   * and grids can be nested.
+   */
+  addGrid(rows, cols) {
+    const gridRows = [];
+
+    for (let i = 0; i < rows; i++) {
+      const gridCells = [];
+
+      for (let j = 0; j < cols; j++) {
+        gridCells.push(new GridCell());
+      }
+
+      gridRows.push(new GridRow(...gridCells))
+    }
+
+    this.grid = new Grid(...gridRows);
+    this.grid.$el.appendTo(document.body);
+
+    return this.grid;
+  }
+
+
+  // letting Page be the master delegator?
+  addPanel() {}
 
 
   #loadCss(hrefs = []) {

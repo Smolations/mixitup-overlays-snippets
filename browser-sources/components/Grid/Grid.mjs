@@ -1,4 +1,3 @@
-import GridRow from './GridRow.mjs';
 
 // x(cols), y(rows), opts
 // const grid = new Grid(3, 3);
@@ -16,28 +15,22 @@ import GridRow from './GridRow.mjs';
 
 export default class Grid {
   static assets = [
-    ...GridRow.assets,
     './components/Grid/Grid.css',
   ];
 
-  gridRows = [];
+  gridRows;
 
-  constructor({ rows, cols }) {
-    this.rows = rows;
-    this.cols = cols;
+  constructor(...gridRows) {
+    this.gridRows = gridRows;
+    this.$el = $('<main>').addClass('Grid');
 
-    this.$el = $('<main>').addClass('Grid').appendTo('body');
-
-    this.buildGrid(rows, cols);
+    this.buildGrid(gridRows);
   }
 
-  buildGrid(rows, cols) {
-    for (let i = 0; i < rows; i++) {
-      const row = new GridRow(cols);
-
-      this.$el.append(row.$el);
-      this.gridRows.push(row);
-      this[i] = row;
-    }
+  buildGrid(gridRows) {
+    gridRows.forEach((gridRow, ndx) => {
+      this.$el.append(gridRow.$el);
+      this[ndx] = gridRow;
+    });
   }
 }
