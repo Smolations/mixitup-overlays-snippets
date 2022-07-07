@@ -264,17 +264,35 @@ export default class Sparks {
    */
   generateRandomSparking({
     frequency = this.opts.frequency,
-    duration = this.opts.duration,
+    totalDuration = this.opts.duration,
   } = {}) {
+    // need to make sure sparks don't step on each other's toes since we're
+    // just hiding/showing a continuous animation. random times should be added
+    // to the random durations and there should be no overlap
+    //
+    // break total duration into equal sections that fit all sparks, then pick
+    // a random spark duration, subtract from end time of first section, then
+    // pick a random time from remaining space. then repeat the process, using
+    // the end time of the previous spark duration
+    //
+    // OR
+    //
+    // pick spark durations first, figure out available space, then break up
+    // the available space to determine spark start times..
+    const maxDurationMs = (totalDuration - this.opts.startDelay);
+    const maxSparkDurationMs = Array.isArray(this.opts.sparkDuration) ? this.opts.sparkDuration[1] : this.opts.sparkDuration;
+
+    if (maxSparkDurationMs * frequency >= maxDurationMs) {
+      console.warn('All sparks likely will not fit in specified duration...');
+      // should return?
+    }
+
+
+
     for (let i = 0; i < frequency; i++) {
-      const time = this.getRandomTime(duration);
+      const time = this.getRandomTime(totalDuration);
       const rotation = this.getRandomRotation();
       const sparkDuration = this.sparkDuration;
-
-      // need to make sure sparks don't step on each other's toes since we're
-      // just hiding/showing a continuous animation. random times should be added
-      // to the random durations and there should be no overlap
-
 
       setTimeout(() => {
         this.rotate(rotation);
