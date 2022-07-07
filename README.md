@@ -15,6 +15,9 @@ todo:
 - [~] fix monogram border
 - [x] set up new follower/sub with terminal event
   - need to monitor actual event triggers to verify working functionality
+- [ ] figure out grid system and abstraction for various files
+- [ ] need new Panel class that will hold a terminal, and anything else
+  - [ ] panel class will be responsible for defining its own animations and triggering sparks
 - [ ] create terminal event notifications for applicable events
   - also trigger auto shoutout for raid event
 - [ ] fine tune new sub event using special event identifiers
@@ -29,7 +32,6 @@ todo:
 - [x] find css sparks for panels
   - [ ] find sounds for sparks
 - [ ] figure out chat box
-- [ ] figure out grid system and abstraction for various files
 - [x] experiment with MIU widget
   - can do basically the same thing as the browser source swapping
   - successive calls reset widget (i.e. refresh page) so still have timing issue

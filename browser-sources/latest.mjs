@@ -72,7 +72,7 @@ page.ready(async () => {
 
 
   // test/debug stuffs
-  $('body').css('background-color', 'black');
+  // $('body').css('background-color', 'black');
   // let $test = $('<div>').css({
   //   outline: '1px solid yellow',
   //   position: 'relative',
@@ -99,7 +99,7 @@ page.ready(async () => {
   await terminal.command(
     terminal.stdin('marquee --latest'),
     terminal.stdout(StdoutMarquee({
-      numRenders: 3,
+      numRenders: 2,
       stdoutArgs: ['follower: %h subscriber: %h', follower, subscriber],
     })),
   );

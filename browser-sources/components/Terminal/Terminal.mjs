@@ -145,7 +145,7 @@ class Terminal {
       setTimeout(() => {
         this.$terminalContainer
           .removeClass(this.classes.closed)
-          .addClass(this.classes.opening); console.log('terminal.rect.left (opening): %o', terminal.rect.left)
+          .addClass(this.classes.opening);
       }, delay);
     });
   }

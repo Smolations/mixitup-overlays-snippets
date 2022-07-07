@@ -1,4 +1,5 @@
 import Page from './components/Page.mjs';
+import Sparks from './components/Sparks.mjs';
 import Terminal from './components/Terminal/Terminal.mjs';
 
 
@@ -10,8 +11,10 @@ const page = new Page({
 });
 
 
+
+
 // ?subject=drive&username=chode&name=PNY 1kb drive&base=37&bonus=13&target=bytes
-async function processDrive(params) {
+async function processDrive(params, playSparks) {
   const terminal = new Terminal({ rows: 6, columns: 40 });
   const sanitizedName = params.get('name').toLowerCase().replaceAll(' ', '_');
   const username = params.get('username');
@@ -24,6 +27,7 @@ async function processDrive(params) {
 
   bytesBonus && bytesFiles.push(`${bytesBonus}.${targetPrize}`);
 
+  playSparks(terminal);
   await terminal.open();
 
   await terminal.command(terminal.stdin(`mkdir ${folderName}`));
@@ -41,10 +45,11 @@ async function processDrive(params) {
 }
 
 // ?subject=newFollower&username=poob
-async function processNewFollower(params) {
+async function processNewFollower(params, playSparks) {
   const terminal = new Terminal({ rows: 5, columns: 40 });
   const username = params.get('username');
 
+  playSparks(terminal);
   await terminal.open();
 
   await terminal.command(
@@ -56,7 +61,7 @@ async function processNewFollower(params) {
 }
 
 // ?subject=newSubscriber&username=poob
-async function processNewSubscriber(params) {
+async function processNewSubscriber(params, playSparks) {
   const terminal = new Terminal({ rows: 5, columns: 40 });
   const username = params.get('username');
   const formatStr = `
@@ -64,6 +69,7 @@ async function processNewSubscriber(params) {
     complimentary message.
   `.replaceAll(/\s+/g, ' ').trim();
 
+  playSparks(terminal);
   await terminal.open();
 
   await terminal.command(
@@ -75,11 +81,12 @@ async function processNewSubscriber(params) {
 }
 
 // ?subject=raid&username=SneakyFoxtrot&raidCount=7
-async function processRaid(params) {
+async function processRaid(params, playSparks) {
   const terminal = new Terminal({ rows: 5, columns: 40 });
   const username = params.get('username');
   const raidCount = params.get('raidCount');
 
+  playSparks(terminal);
   await terminal.open();
 
   await terminal.command(
@@ -103,21 +110,69 @@ async function processRaid(params) {
 page.ready(async () => {
   const queryParams = new URLSearchParams(window.location.search);
 
+  // need sparks on top of terminal (maybe eventually ensure Terminal
+  // is always prepended and sparks always appended to body?) so will
+  // use a callback for instantiation/playing. since there is currently
+  // only one opening/closing animation, they can all share the same sparks.
+  function playSparks(terminal, open = true) {
+    const {
+      left: terminalLeft,
+      width: terminalWidth,
+    } = terminal.rect;
+
+    const commonOpts = {
+      autostart: true,
+      top: -5,
+      duration: 4000, // opening animation is 3s
+      rotationVariation: Math.PI * (1 / 8),
+    };
+
+    new Sparks({
+      ...commonOpts,
+      id: 'middleSparks',
+      left: [terminalLeft + 100, terminalLeft + 300],
+      speed: 80,
+      scaleFactor: [0.2, 0.4],
+      sparkDuration: [300, 600],
+      frequency: 3,
+    });
+
+    new Sparks({
+      ...commonOpts,
+      id: 'sparksLeft',
+      left: terminalLeft,
+      speed: 60,
+      scaleFactor: [0.5, 0.7],
+      sparkDuration: [100, 800],
+      frequency: 4,
+    });
+
+    new Sparks({
+      ...commonOpts,
+      id: 'sparksRight',
+      left: terminalLeft + terminalWidth,
+      speed: 30,
+      scaleFactor: [0.5, 0.7],
+      sparkDuration: [100, 750],
+      frequency: 2,
+    });
+  }
+
   switch (queryParams.get('subject')) {
     case 'drive':
-      processDrive(queryParams);
+      processDrive(queryParams, playSparks);
       break;
 
     case 'newFollower':
-      processNewFollower(queryParams);
+      processNewFollower(queryParams, playSparks);
       break;
 
     case 'newSubscriber':
-      processNewSubscriber(queryParams);
+      processNewSubscriber(queryParams, playSparks);
       break;
 
     case 'raid':
-      processRaid(queryParams);
+      processRaid(queryParams, playSparks);
       break;
   }
 });
