@@ -42,6 +42,7 @@ export default class Sparks {
    */
   constructor(opts) {
     this.opts = {
+      id: 'needsId',
       amount: 60,
       speed: 120,
       frequency: 6,
@@ -51,6 +52,7 @@ export default class Sparks {
       rotationVariation: 0.1,
       scaleFactor: 1,
       startDelay: 0, // does not affect overall duration
+      glareWidth: 120,
       fullscreen: true,
       autostart: false,
       ...opts,
@@ -68,7 +70,7 @@ export default class Sparks {
     this.opts.left ||= (this.two.width / 2);
 
     this.$canvas = $(this.two.renderer.domElement);
-    this.$glare = this.$getGlare();
+    this.$glare = this.$getGlare(this.opts.glareWidth, this.scaleFactor);
 
     this.prepareScene();
 
@@ -127,18 +129,19 @@ export default class Sparks {
       // type checking?
       value = this.getRandomNumber(...value);
     }
-    console.log('optValueOrRandom(%o) => %o', optName, value);
+    // console.log('optValueOrRandom(%o) => %o', optName, value);
     return value;
   }
 
   // @todo "squeeze" element via transform to better match shape of sparks
-  $getGlare(width = 80) {
-    const scaledWidth = (this.opts.scale * width);
+  $getGlare(width, scaleFactor) {
+    const scaledWidth = (scaleFactor * width);
     const radialGradient = [
       'rgba(255, 255, 255, 0.45)',
       'rgba(255, 255, 255, 0.08)',
       'rgba(255, 255, 255, 0)',
     ].join(', ');
+    console.log({ scaledWidth })
 
     return $('<div>')
       .addClass('Sparks--glare')
@@ -161,10 +164,16 @@ export default class Sparks {
   }
 
   /**
+   * moves glare along with sparks
+   *
    * @param {Number} x basically css "left"
    * @param {Number} y basically css "top"
    */
   translate(x, y) {
+    this.$glare.css({
+      left: `${x - (this.opts.glareWidth / 2)}px`,
+      top: `${y - (this.opts.glareWidth / 2) }px`,
+    });
     this.two.scene.translation.set(x, y);
   }
 
@@ -173,6 +182,10 @@ export default class Sparks {
    */
   scale(scaleFactor) {
     this.two.scene.scale = scaleFactor;
+    this.$glare.css({
+      height: this.opts.glareWidth * scaleFactor,
+      width: this.opts.glareWidth * scaleFactor,
+    });
   }
 
 
@@ -180,7 +193,12 @@ export default class Sparks {
   // scene can be paused afterwards
   play() {
     this.two.play();
-    this.generateRandomSparking();
+    this.generateRandomSparking({
+      frequency: this.opts.frequency,
+      totalDuration: this.opts.duration,
+      startDelay: this.opts.startDelay,
+      sparkDuration: this.opts.sparkDuration,
+    });
   }
 
 
@@ -238,11 +256,113 @@ export default class Sparks {
     return curves;
   }
 
+  /**
+   * Calculates random timings for spark visibility based on given params. All
+   * times are in milliseconds.
+   *
+   * @param {Object} opts
+   * @property {Number} opts.startDelay     the minimum time required to pass before
+   *                                        first spark appears.
+   * @property {Number} opts.frequency      number of times a spark occurs within the
+   *                                        duration - delay; usually a small integer.
+   * @property {Number} opts.sparkDuration  total duration for any individual spark
+   *                                        to be visible.
+   * @property {Number} opts.totalDuration  total duration where sparking can occur.
+   *
+   * @returns {Object} Containing:
+   *                    {Number} obj.numSparks
+   *                    {Array}  obj.offsets   unordered timing offsets for each spark.
+   *                    {Array}  obj.durations
+   */
+  generateSparkTimings({
+    frequency,
+    totalDuration,
+    startDelay,
+    sparkDuration,
+  } = {}) {
+    // need to make sure sparks don't step on each other's toes since we're
+    // just hiding/showing a continuous animation. random times should be added
+    // to the random durations and there should be no overlap
+    const maxDurationMs = (totalDuration - startDelay);
+    const maxSparkDurationMs = Array.isArray(sparkDuration)
+      ? sparkDuration[1]
+      : sparkDuration;
+
+    if (maxSparkDurationMs * frequency >= maxDurationMs) {
+      throw new Error('All sparks likely will not fit in specified duration...');
+    }
+
+    const mod = (maxDurationMs % maxSparkDurationMs);
+    // console.debug('leftover(mod): %o', mod);
+
+    const leadIn = this.getRandomNumber(0, mod);
+    // console.debug('leadIn: %o', leadIn);
+
+    const maxNumSparks = Math.floor((maxDurationMs - leadIn) / maxSparkDurationMs);
+    // console.debug('maxNumSparks: %o', maxNumSparks);
+
+    const numSparks = Math.min(maxNumSparks, frequency);
+    // console.debug('numSparks: %o', numSparks);
+
+    // pick spark durations first, figure out available space, then break up
+    // the available space to determine spark start times..
+    const sparkDurations = Array(numSparks).fill().map(() => this.sparkDuration);
+    // const sparkDurationTotalMs = sparkDurations.reduce((sum, duration) => (sum + duration), 0);
+    // console.debug('sparkDurations(total: %o): %o', sparkDurationTotalMs, sparkDurations);
+
+    const sparkStartTimeOffsets = Array(numSparks - 1).fill().reduce(
+      (offsets, _, ndx) => {
+        const currentNdx = ndx + 1;
+        const lastStartTime = offsets[currentNdx - 1];
+        const lastSparkEndTime = lastStartTime + sparkDurations[ndx];
+        const remainingSections = (numSparks - currentNdx);
+        const randomNum = this.getRandomNumber(
+          lastSparkEndTime,
+          lastSparkEndTime + ((maxDurationMs - lastSparkEndTime) / remainingSections) - maxSparkDurationMs,
+        );
+
+        return [...offsets, randomNum];
+      },
+      [leadIn],
+    );
+    // const sparkTimeOffsetsTotalMs = sparkStartTimeOffsets.reduce((sum, duration) => (sum + duration), 0);
+    // console.log('sparkStartTimeOffsets(total: %o): %o', sparkTimeOffsetsTotalMs, sparkStartTimeOffsets);
+
+    // const blended = sparkDurations.reduce((sum, duration, i) => (sum + duration + sparkStartTimeOffsets[i]), 0);
+    // console.log('blended(sparkDuration + sparkStartTimeOffset) total: %o', blended)
+
+    return {
+      offsets: sparkStartTimeOffsets,
+      durations: sparkDurations,
+      numSparks,
+    };
+  }
+
+  getRandomPosition() {
+    const scaleFactor = this.scaleFactor;
+    const top = this.top;
+    const left = this.left;
+
+    return {
+      top,
+      left,
+      scaleFactor,
+      rotation: this.getRandomRotation(),
+      glareWidth: (this.opts.glareWidth * scaleFactor),
+    };
+  }
+
+  /**
+   * Ensure elements are in dom, set visibility, set position/orientation, etc.
+   */
   prepareScene() {
-    this.$canvas.css({
-      background: 'transparent',
-      opacity: 0,
-    }); // as overlay
+    const initialState = this.getRandomPosition();
+    this.$canvas
+      .addClass(`Sparks--canvas Sparks--${this.opts.id}`)
+      .css({
+        background: 'transparent',
+        opacity: 0,
+      }); // as overlay
     this.$glare.css({ opacity: 0 }).appendTo('body');
 
     // ?
@@ -250,62 +370,77 @@ export default class Sparks {
 
     this.generateSparkCurves().forEach((curve) => this.two.add(curve));
     // could eventually use css variables to location panel edges
-    this.translate(this.left, this.top);
-    this.rotate(this.getRandomRotation());
-    this.scale(this.scaleFactor);
+    this.translate(initialState.left, initialState.top);
+    this.rotate(initialState.rotation);
+    this.scale(initialState.scaleFactor);
     this.setUpdateBehavior();
   }
 
   /**
+   * Responsible for calculating the timing of sparks and showing/hiding them.
+   * All times are in milliseconds.
+   *
    * @param {Object} opts
-   * @property {Number} opts.frequency number of times a spark occurs within the
-   *                                   duration - delay; usually a small integer.
-   * @property {Number} opts.duration  total duration where sparking can occur.
+   * @property {Number} opts.startDelay     the minimum time required to pass before
+   *                                        first spark appears.
+   * @property {Number} opts.frequency      number of times a spark occurs within the
+   *                                        duration - delay; usually a small integer.
+   * @property {Number} opts.sparkDuration  total duration for any individual spark
+   *                                        to be visible.
+   * @property {Number} opts.totalDuration  total duration where sparking can occur.
    */
   generateRandomSparking({
-    frequency = this.opts.frequency,
-    totalDuration = this.opts.duration,
+    startDelay,
+    frequency,
+    sparkDuration,
+    totalDuration,
   } = {}) {
-    // need to make sure sparks don't step on each other's toes since we're
-    // just hiding/showing a continuous animation. random times should be added
-    // to the random durations and there should be no overlap
-    //
-    // break total duration into equal sections that fit all sparks, then pick
-    // a random spark duration, subtract from end time of first section, then
-    // pick a random time from remaining space. then repeat the process, using
-    // the end time of the previous spark duration
-    //
-    // OR
-    //
-    // pick spark durations first, figure out available space, then break up
-    // the available space to determine spark start times..
-    const maxDurationMs = (totalDuration - this.opts.startDelay);
-    const maxSparkDurationMs = Array.isArray(this.opts.sparkDuration) ? this.opts.sparkDuration[1] : this.opts.sparkDuration;
+    const timings = this.generateSparkTimings({
+      startDelay,
+      frequency,
+      sparkDuration,
+      totalDuration,
+    });
 
-    if (maxSparkDurationMs * frequency >= maxDurationMs) {
-      console.warn('All sparks likely will not fit in specified duration...');
-      // should return?
-    }
+    const {
+      offsets: sparkStartTimeOffsets,
+      durations: sparkDurations,
+      numSparks,
+    } = timings;
 
+    // for debugging, tracking spark on/off timings
+    const now = Date.now();
 
-
-    for (let i = 0; i < frequency; i++) {
-      const time = this.getRandomTime(totalDuration);
-      const rotation = this.getRandomRotation();
-      const sparkDuration = this.sparkDuration;
+    for (let i = 0; i < numSparks; i++) {
+      const {
+        top,
+        left,
+        rotation,
+        scaleFactor,
+        glareWidth,
+      } = this.getRandomPosition();
+      const startTime = sparkStartTimeOffsets[i];
+      const sparkDuration = sparkDurations[i];
 
       setTimeout(() => {
+        console.debug('[%o] spark on!', Date.now() - now)
         this.rotate(rotation);
-        this.scale(this.scaleFactor);
-        this.translate(this.left, this.top);
+        this.scale(scaleFactor);
+        this.translate(left, top);
+
         this.$canvas.css('opacity', 1);
-        this.$glare.css('opacity', 1);
+        this.$glare.css({
+          opacity: 1,
+          left: left - (glareWidth / 2),
+          top: top - (glareWidth / 2),
+        });
 
         setTimeout(() => {
+          console.debug('[%o] spark off!', Date.now() - now)
           this.$canvas.css('opacity', 0);
           this.$glare.css('opacity', 0);
         }, sparkDuration);
-      }, time);
+      }, (startDelay + startTime));
     }
   }
 

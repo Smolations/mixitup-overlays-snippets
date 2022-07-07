@@ -26,35 +26,48 @@ page.ready(async () => {
   const follower = queryParams.get('follower');
   const subscriber = queryParams.get('subscriber');
 
-
   // this fixes the terminal sizing problem... somehow...browser paint-related?
   await new Promise((resolve) => setTimeout(resolve, 100));
 
+  const {
+    left: terminalLeft,
+    width: terminalWidth,
+  } = terminal.rect;
+
   const mySparks = new Sparks({
+    id: 'mySparks',
     top: -5,
-    left: [terminal.rect.left + 100, terminal.rect.left + 300],
+    left: [terminalLeft + 100, terminalLeft + 300],
     speed: 80,
+    duration: 4000, // opening animation is 3s
     scaleFactor: [0.2, 0.4],
-    sparkDuration: [100, 1000],
-    frequency: 4,
+    sparkDuration: [300, 600],
+    frequency: 3,
+    rotationVariation: Math.PI * (1/8),
   });
 
   const sparksLeft = new Sparks({
+    id: 'sparksLeft',
     top: -5,
-    left: terminal.rect.left,
+    left: terminalLeft,
     speed: 60,
-    scaleFactor: [0.6, 0.8],
-    sparkDuration: [100, 1000],
+    duration: 4000, // opening animation is 3s
+    scaleFactor: [0.5, 0.7],
+    sparkDuration: [100, 800],
     frequency: 4,
+    rotationVariation: Math.PI * (1/8),
   });
 
   const sparksRight = new Sparks({
+    id: 'sparksRight',
     top: -5,
-    left: terminal.rect.left + terminal.rect.width,
+    left: terminalLeft + terminalWidth,
     speed: 30,
-    scaleFactor: [0.6, 0.8],
-    sparkDuration: [100, 1000],
-    frequency: 4,
+    duration: 4000, // opening animation is 3s
+    scaleFactor: [0.5, 0.7],
+    sparkDuration: [100, 750],
+    frequency: 2,
+    rotationVariation: Math.PI * (1/8),
   });
 
 
@@ -73,7 +86,7 @@ page.ready(async () => {
 
 
   console.log('terminal.rect.left (pre-open): %o', terminal.rect.left)
-  console.log('terminal.rect.width (pre-open): %o', terminal.rect.width)
+  // console.log('terminal.rect.width (pre-open): %o', terminal.rect.width)
   // console.log('test.rect.left (pre-open): %o', $test[0].getBoundingClientRect().left)
 
   mySparks.play();
@@ -81,7 +94,7 @@ page.ready(async () => {
   sparksRight.play();
   await terminal.open();
 
-  console.log('terminal.rect.left (post-open): %o', terminal.rect.left)
+  // console.log('terminal.rect.left (post-open): %o', terminal.rect.left)
 
   await terminal.command(
     terminal.stdin('marquee --latest'),

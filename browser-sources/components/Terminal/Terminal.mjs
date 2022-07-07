@@ -10,6 +10,8 @@ class Terminal {
     ...Stdout.assets,
   ];
 
+
+
   classes = {
     // core classes
     container: 'Terminal--container',

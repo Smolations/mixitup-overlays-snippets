@@ -23,8 +23,10 @@ todo:
 - [x] fix monogram size in terminal events and maybe width
 - [~] find sounds for terminal stuffs
   - [x] keypresses for terminal input
-  - [ ] panel movement
-- [ ] find css sparks for panels
+  - [x] panel movement
+  - [ ] cut up sounds into small files and organize
+  - [ ] create special class for sound effects? could help with randomization and timing, fade volume, etc
+- [x] find css sparks for panels
   - [ ] find sounds for sparks
 - [ ] figure out chat box
 - [ ] figure out grid system and abstraction for various files
