@@ -18,7 +18,7 @@ page.ready(async (grid) => {
 
   await gridCell.show('testPanel');
   console.log('open!');
-  await gridCell.hide('testPanel');
+  // await gridCell.hide('testPanel');
 
   // $('body').css({
   //   background: 'repeat url("./img/rusty-iron-plate-bg.jpg")',
