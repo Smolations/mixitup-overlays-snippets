@@ -4,8 +4,10 @@
 :root {
   /* rgb(232, 99, 0) */
   --reentry-orange: #e86300;
+  --reentry-orange-rgb: 232, 99, 0;
   /* rgb(81, 74, 70) */
   --battletech-grey: #514a46;
+  --battletech-grey-rgb: 81, 74, 70;
 }
 
 html, body {

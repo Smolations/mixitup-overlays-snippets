@@ -12,8 +12,8 @@ page.ready(async (grid) => {
   const gridCell = grid[1][0].addPanel('testPanel', {
     // animationAxis: 'x',
     content: 'HELLLOO',
-    height: '100px',
-    width: '80%',
+    height: '300px',
+    width: '150%',
   });
 
   await gridCell.show('testPanel');

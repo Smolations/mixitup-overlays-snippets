@@ -37,7 +37,8 @@
 
   --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
   --text-glow-default: 0px 0px 8px #666666;
-  --text-glow-highlight: 0px 0px 8px rgba(232, 99, 0, 0.8);
+  /* --text-glow-highlight: 0px 0px 8px rgba(232, 99, 0, 0.8); */
+  --text-glow-highlight: 0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8);
   --glow-white: drop-shadow(var(--text-glow-default));
   --glow-highlight: drop-shadow(var(--text-glow-highlight));
 }
