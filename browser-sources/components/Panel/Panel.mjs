@@ -24,7 +24,7 @@ export default class Panel {
 
   panelCommonCss = {
     boxSizing: 'border-box',
-    background: 'repeat url("./img/rusty-iron-plate-bg.jpg")',
+    background: 'var(--battletech-grey) url("./img/rusty-iron-plate-bg.jpg") repeat',
   };
 
 
@@ -47,12 +47,13 @@ export default class Panel {
         position: 'relative',
         height,
         width,
-        padding: this.frameWidth,
+        padding: `var(--y-offset) var(--x-offset)`,
+        backgroundBlendMode: 'hard-light',
         borderRadius: 'var(--border-radius)',
+        color: 'white',
 
         // testing
-        background: 'white',
-        color: 'white',
+        // background: 'white',
       });
   }
 
