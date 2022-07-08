@@ -1,8 +1,0 @@
-.GridRow {
-  box-sizing: border-box;
-  flex-grow: 1;
-  display: flex;
-  justify-content: stretch;
-
-  position: relative;
-}

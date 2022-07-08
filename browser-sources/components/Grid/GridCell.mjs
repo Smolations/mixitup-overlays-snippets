@@ -4,7 +4,7 @@ import Panel from '../Panel/Panel.mjs';
 export default class GridCell {
   static assets = [
     ...Panel.assets,
-    './components/Grid/GridCell.css',
+    // './components/Grid/GridCell.css',
   ];
 
   // require id's for all content for quick storage/access
@@ -18,8 +18,14 @@ export default class GridCell {
 
 
   constructor() {
-    this.$el = $('<div>').addClass('GridCell');
-    this.$el.css('outline', '1px dotted blue'); // debugging
+    this.$el = $('<div>')
+      .addClass('GridCell')
+      .css({
+        boxSizing: 'border-box',
+        flexGrow: 1,
+        position: 'relative',
+        outline: '1px dotted blue',  // debugging
+      });
   }
 
 

@@ -1,6 +1,6 @@
 export default class GridRow {
   static assets = [
-    './components/Grid/GridRow.css',
+    // './components/Grid/GridRow.css',
   ];
 
   gridCells;
@@ -8,8 +8,16 @@ export default class GridRow {
 
   constructor(...gridCells) {
     this.gridCells = gridCells;
-    this.$el = $('<section>').addClass('GridRow');
-    this.$el.css('outline', '1px dotted red'); // debugging
+    this.$el = $('<section>')
+      .addClass('GridRow')
+      .css({
+        boxSizing: 'border-box',
+        flexGrow: 1,
+        position: 'relative',
+        display: 'flex',
+        justifyContent: 'stretch',
+        'outline': '1px dotted red', // debugging
+      });
 
     this.buildRow(gridCells);
   }
