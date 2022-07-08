@@ -17,6 +17,7 @@ export default class GridRow {
 
   buildRow(gridCells) {
     gridCells.forEach((gridCell, ndx) => {
+      gridCell.$el.css({ width: `${(1 / gridCells.length) * 100}%` });
       this.$el.append(gridCell.$el);
       this[ndx] = gridCell;
     });

@@ -29,6 +29,7 @@ export default class Grid {
 
   buildGrid(gridRows) {
     gridRows.forEach((gridRow, ndx) => {
+      gridRow.$el.css({ height: `${(1 / gridRows.length) * 100}%` });
       this.$el.append(gridRow.$el);
       this[ndx] = gridRow;
     });

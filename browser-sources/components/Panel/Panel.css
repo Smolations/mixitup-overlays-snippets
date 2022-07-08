@@ -1,0 +1,7 @@
+.Panel {
+  box-sizing: border-box;
+  position: relative;
+
+  background: repeat url('../../img/rusty-iron-plate-bg.jpg');
+  border-radius: 1px;
+}

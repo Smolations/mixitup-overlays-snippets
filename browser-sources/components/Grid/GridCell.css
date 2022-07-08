@@ -1,4 +1,5 @@
 .GridCell {
+  box-sizing: border-box;
   flex-grow: 1;
 
   position: relative;
