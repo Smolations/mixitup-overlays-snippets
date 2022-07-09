@@ -58,6 +58,7 @@ export default class GridCell {
     content,
     height,
     width,
+    center = false,
     animationAxis: preferredAnimationAxis,
   }) {
     const panel = new Panel({ height, width });
@@ -69,6 +70,20 @@ export default class GridCell {
       content: panel,
       spec,
     };
+
+    if (center) {
+      if (spec.animationAxis === 'y') {
+        panel.$el.css({
+          left: '50%',
+          transform: `${panel.$el.css('transform')} translateX(-50%)`,
+        });
+      } else {
+        panel.$el.css({
+          top: '50%',
+          transform: `${panel.$el.css('transform')} translateY(-50%)`,
+        });
+      }
+    }
 
     this.content[contentId] = contentObj;
 
@@ -131,7 +146,12 @@ export default class GridCell {
           from,
           animationAxis,
           animationDimensionName: (dim === 'Y') ? 'height' : 'width',
-          translate: (val) => `translate${dim}(${val})`,
+          translate(val) {
+            // expect `this` to be some content with .$el
+            // (e.g. translate.call(content,...))
+            const currentTransform = this.$el.css('transform');
+            return `${currentTransform === 'none' ? '' : currentTransform} translate${dim}(${val})`
+          },
         },
       };
     }, {});
@@ -142,13 +162,12 @@ export default class GridCell {
   animateIn(content, spec) {
     const { animationDimensionName, translate } = spec;
     const length = content.$el.css(animationDimensionName);
-
     // cell will need to know orientation for correct entry/exit animations
     const contentEnter = [
-      { transform: translate(0) },
-      { offset: 0.15, transform: translate(`calc(0.7 * ${length})`) },
-      { offset: 0.20, transform: translate(`calc(0.65 * ${length})`) },
-      { transform: translate(`calc(${length} + ${this.offscreenShift})`) },
+      { transform: translate.call(content, 0) },
+      { offset: 0.15, transform: translate.call(content, `calc(0.7 * ${length})`) },
+      { offset: 0.20, transform: translate.call(content, `calc(0.65 * ${length})`) },
+      { transform: translate.call(content, `calc(${length} + ${this.offscreenShift})`) },
     ];
     const contentEnterTiming = {
       duration: 3000,

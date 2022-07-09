@@ -1,6 +1,6 @@
 import TerminalLine from './TerminalLine.mjs';
 
-
+// can't eliminate stylesheet since it makes use of pseudo selectors/elements
 export default class Stdin extends TerminalLine {
   static assets = [
     ...TerminalLine.assets,
@@ -16,7 +16,11 @@ export default class Stdin extends TerminalLine {
 
 
     // this.$el = $('<pre>');
-    this.$el.addClass('Stdin');
+    this.$el
+      .addClass('Stdin')
+      .css({
+        filter: 'var(--glow-white) var(--glow-white) brightness(1.5)',
+      });
 
     // preload keypress sounds
     for (let i = 0; i < 37; i++) {

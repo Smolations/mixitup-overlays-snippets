@@ -8,14 +8,17 @@ const page = new Page({
 });
 
 page.ready(async (grid) => {
+  const gridCell = grid[0][1]
+    .addPanel('testPanel', {
+      // animationAxis: 'x',
+      content: 'HELLLOO',
+      height: '300px',
+      width: '150%',
+      center: true,
+    });
 
-  const gridCell = grid[1][0].addPanel('testPanel', {
-    // animationAxis: 'x',
-    content: 'HELLLOO',
-    height: '300px',
-    width: '150%',
-  });
-
+  console.log('opening')
+  // setTimeout(() => gridCell.show('testPanel'), 5000)
   await gridCell.show('testPanel');
   console.log('open!');
   // await gridCell.hide('testPanel');
