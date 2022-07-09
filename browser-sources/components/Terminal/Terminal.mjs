@@ -5,23 +5,10 @@ import Stdout from './Stdout.mjs';
 class Terminal {
   static assets = [
     'https://cdnjs.cloudflare.com/ajax/libs/two.js/0.7.0-beta.3/two.min.js',
-    './components/Terminal/Terminal.css',
+    // './components/Terminal/Terminal.css',
     ...Stdin.assets,
     ...Stdout.assets,
   ];
-
-
-
-  classes = {
-    // core classes
-    container: 'Terminal--container',
-    terminal: 'Terminal',
-    // animation classes
-    closed: 'Terminal--closed',
-    closing: 'Terminal--closing',
-    open: 'Terminal--opened',
-    opening: 'Terminal--opening',
-  };
 
   vars = {
     rows: '--terminal-rows',
@@ -29,6 +16,60 @@ class Terminal {
     height: '--terminal-height',
     width: '--terminal-width',
   };
+
+  rows;
+  columns;
+
+  color = '#ffffff';
+  bgColor = 'rgba(0, 0, 0, 0.75)';
+  highlightColor = 'var(--reentry-orange)';
+
+  fontSize = '32px'; /* 32px is 100cols at 1080p */
+  lineXPadding = '1ch';
+  lineYPadding = `calc(0.15 * ${this.fontSize})`;
+  offscreenShift = `calc(0.5 * ${this.fontSize})`;
+
+  get heightCalc() {
+    /* extra padding for first/last lines */
+    return `calc(
+      ((1 + (${this.rows})) * (2 * ${this.lineYPadding}))
+      + (${this.rows} * ${this.fontSize})
+    )`.replaceAll(/\s{2,}/g, ' ').trim();
+  }
+
+  get widthCalc() {
+    return `calc((2 * ${this.lineXPadding}) + (${this.columns} * 1ch))`;
+  }
+//   --terminal-rows: 2; /* number of lines visible */
+//   --terminal-columns: 20; /* number of characters per line */
+//
+//   --terminal-color: #ffffff;
+//   --terminal-bg-color: rgba(0, 0, 0, 0.75);
+//   --terminal-highlight-color: var(--reentry-orange);
+//
+//   --terminal-font-size: 32px; /* 32px is 100cols at 1080p */
+//   --terminal-line-horizontal-padding: 1ch;
+//   --terminal-line-vertical-padding: calc(0.15 * var(--terminal-font-size));
+//   --terminal-offscreen-shift: calc(0.5 * var(--terminal-font-size)); /* off screen when closed */
+//   --terminal-height: calc(
+//     ((1 + (var(--terminal-rows))) * (2 * var(--terminal-line-vertical-padding))) /* extra padding for first/last lines */
+//     + (var(--terminal-rows) * var(--terminal-font-size))
+//   );
+  // --terminal-width: calc(
+  //   (2 * var(--terminal-line-horizontal-padding))
+  //   + (var(--terminal-columns) * 1ch)
+  // );
+
+  mask = 'repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px)';
+  textGlowDefault = '0px 0px 8px #666666';
+  textGlowHighlight = '0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8)';
+  glowWhite = `drop-shadow(${this.textGlowDefault})`;
+  glowHighlight = `drop-shadow(${this.textGlowHighlight})`;
+  // --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
+  // --text-glow-default: 0px 0px 8px #666666;
+  // --text-glow-highlight: 0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8);
+  // --glow-white: drop-shadow(var(--text-glow-default));
+  // --glow-highlight: drop-shadow(var(--text-glow-highlight));
 
   #sessionLines = [];
 
@@ -41,36 +82,110 @@ class Terminal {
   constructor({
     columns = 10,
     rows = 2,
-    location = [2, 1],  // ?  (top middle in 3x3; y-axis inverted)
     prompt = true,
   } = {}) {
-    const { classes, vars } = this;
+    const { vars } = this;
 
-    const $root = $(':root'); // must keep defined in stylesheet
-    const $body = $('body');
-    const $terminalContainer = $('<div>');
-    const $terminal = $('<section>');
+    this.columns = columns;
+    this.rows = rows;
 
-    $terminalContainer.addClass(classes.container).addClass(classes.closed);
-    $terminal.addClass(classes.terminal);
+    this.$el = this.$getTerminalContainer();
+    this.$terminal = this.$getTerminal();
 
-    // apply options
-    $root.css(vars.rows, rows);
-    $root.css(vars.columns, columns);
+    this.$el.append(this.$terminal);
 
-    // add terminal to page
-    $terminalContainer.append($terminal);
-    $body.prepend($terminalContainer);
-
-    // hold onto references for other methods
-    this.$root = $root;
-    this.$terminalContainer = $terminalContainer;
-    this.$terminal = $terminal;
+    this.startTerminalDrift();
 
     // terminals usually start up with an empty line
     if (prompt) {
       this.addPrompt();
     }
+  }
+
+
+  $getTerminal() {
+    const $terminal = $('<section>')
+      .addClass('Terminal')
+      .css({
+        boxSizing: 'border-box',
+        position: 'absolute',
+        bottom: 0,
+        minHeight: '100%',
+        width: '100%',
+        padding: `${this.lineYPadding} 0`,
+
+        backgroundColor: this.bgColor,
+        color: this.color,
+        fontWeight: 'bold',
+        fontSize: this.fontSize,
+
+        '-webkit-mask-image': this.mask,
+        maskImage: this.mask,
+        '-webkit-mask-size': '200%',
+        maskSize: '200%',
+        // animation: terminal-drift 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0),
+      });
+
+    return $terminal;
+  }
+
+  $getTerminalContainer() {
+    return $('<div>')
+      .addClass('Terminal--container')
+      .css({
+        boxSizing: 'border-box',
+        position: 'relative',
+
+        minHeight: this.heightCalc,
+        height: this.heightCalc,
+        maxHeight: this.heightCalc,
+
+        minWidth: this.widthCalc,
+        width: this.widthCalc,
+        maxWidth: this.widthCalc,
+
+        fontSize: this.fontSize,
+        backgroundColor: this.bgColor,
+
+        overflow: 'hidden',
+      });
+  }
+
+  async startTerminalDrift() {
+    this.driftStarted = true;
+    console.log('start drifting');
+    const now = Date.now();
+
+    await new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (parseInt(this.$el.css('height'), 10)) {
+          console.log('wait time: %o', Date.now() - now);
+          this.driftStarted = false;
+          clearInterval(interval);
+          resolve();
+        }
+      }, 100);
+    })
+
+    const terminalDrift = [
+      {
+        'mask-position': '0 0',
+        '-webkit-mask-position': '0 0',
+      },
+      {
+        'mask-position': `0 ${this.heightCalc}`,
+        '-webkit-mask-position': `0 ${this.heightCalc}`,
+      },
+    ];
+    const terminalDriftTiming = {
+      duration: 12000,
+      iterations: Infinity,
+      easing: 'cubic-bezier(0.1, -0.6, 0.2, 0)',
+      direction: 'alternate',
+    };
+
+    console.log('animate with height(%o)! %o', this.heightCalc, terminalDrift);
+    this.$terminal[0].animate(terminalDrift, terminalDriftTiming);
   }
 
   // @returns {Stdin}
@@ -133,43 +248,7 @@ class Terminal {
     }
     return this.$root.css(this.vars[varName]);
   }
-
-
-  open(delay = 0) {
-    return new Promise((resolve) => {
-      this.$terminalContainer.one('animationend', () => {
-        this.$terminalContainer.removeClass(this.classes.opening).addClass(this.classes.open);
-        resolve();
-      });
-
-      setTimeout(() => {
-        this.$terminalContainer
-          .removeClass(this.classes.closed)
-          .addClass(this.classes.opening);
-      }, delay);
-    });
-  }
-
-  close(delay = 0) {
-    return new Promise((resolve) => {
-      this.$terminalContainer.one('animationend', () => {
-        this.$terminalContainer.removeClass(this.classes.closing).addClass(this.classes.closed);
-        resolve();
-      });
-
-      setTimeout(() => {
-        this.$terminalContainer
-          .removeClass(this.classes.open)
-          .addClass(this.classes.closing);
-      }, delay);
-    });
-  }
 }
 
 
 export default Terminal;
-
-// export {
-//   Stdin,
-//   Stdout,
-// };

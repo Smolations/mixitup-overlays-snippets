@@ -18,6 +18,8 @@ export default class Panel {
     '--logo-unused-width-half': `calc((100% - ${this.logoWidth}) / 2)`,
     '--logo-offset-2x': `calc(2 * ${this.logoOffset})`,
     '--logo-total-height': `calc(${this.logoHeight} + 2 * ${this.logoOffset})`,
+    '--min-width': `calc(2 * ${this.logoOffset} + ${this.logoWidth})`,
+    '--min-height': `calc(2 * ${this.logoOffset} + ${this.logoHeight} + 2 * var(--y-offset))`,
     '--border-radius': '3px',
     '--drop-shadow': 'drop-shadow(0 -4px 8px #000)',
   };
@@ -25,6 +27,8 @@ export default class Panel {
   panelCommonCss = {
     boxSizing: 'border-box',
     background: 'var(--battletech-grey) url("./img/rusty-iron-plate-bg.jpg") repeat',
+    minHeight: 'var(--min-height)',
+    minWidth: 'var(--min-width)',
   };
 
 
@@ -37,7 +41,18 @@ export default class Panel {
   }
 
   $getPanel() {
-    const { height, width } = this;
+    // minHeight: `calc(2 * ${this.logoOffset} + ${this.logoHeight} + 2 * var(--y-offset))`,
+    // minWidth: `calc(2 * ${this.logoOffset} + ${this.logoWidth})`,
+    /** COME BACK AND FIX THIS */
+    const minHeight = 2 * parseInt(this.logoOffset) + parseInt(this.logoHeight) + 2 * parseInt(this.yFrameWidth);
+    const minWidth = 2 * parseInt(this.logoOffset) + parseInt(this.logoWidth);
+    const {
+      // height,// = `${minHeight}px`,
+      height,// = 'var(--min-height)',
+      // width,// = `${minWidth}px`,
+      width,// = `var(--min-width)`,
+    } = this;
+
 
     return $('<div>')
       .addClass('Panel')
@@ -154,8 +169,22 @@ export default class Panel {
     return $wrapper.append($frameTop, $frameBottom);
   }
 
-  addContent(content) {
+  addContent(content = {}) {
     // prepend to keep content under frame (and therefore shadow)
-    this.$el.prepend(content);
+    this.$el.prepend(content?.$el || content);
+
+    // maybe some logic to see if previous content has already
+    // set a width...take the largest of all available. until then..
+    if (content.$el) {
+      // debugger;
+      const contentWidth = content.$el.css('width');
+      console.log({ contentWidth });
+      if (parseInt(contentWidth, 10)) {
+        setTimeout(() => {
+          console.log('content rect: %o', content.$el[0].getBoundingClientRect())
+          // this.$el.css('width', `calc(2 * var(--x-offset) + var(--terminal-width))`);
+        }, 10);
+      }
+    }
   }
 }

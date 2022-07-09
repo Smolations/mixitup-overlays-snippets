@@ -18,26 +18,19 @@
   --terminal-font-size: 32px; /* 32px is 100cols at 1080p */
   --terminal-line-horizontal-padding: 1ch;
   --terminal-line-vertical-padding: calc(0.15 * var(--terminal-font-size));
-  --terminal-border-width: calc(0.25 * var(--terminal-font-size));
   --terminal-offscreen-shift: calc(0.5 * var(--terminal-font-size)); /* off screen when closed */
   --terminal-height: calc(
-    var(--terminal-border-width)
-    + ((1 + (var(--terminal-rows))) * (2 * var(--terminal-line-vertical-padding))) /* extra padding for first/last lines */
+    ((1 + (var(--terminal-rows))) * (2 * var(--terminal-line-vertical-padding))) /* extra padding for first/last lines */
     + (var(--terminal-rows) * var(--terminal-font-size))
   );
   --terminal-width: calc(
-    (2 * var(--terminal-border-width))
-    + (2 * var(--terminal-line-horizontal-padding))
+    (2 * var(--terminal-line-horizontal-padding))
     + (var(--terminal-columns) * 1ch)
   );
-  /* --terminal-width: 500px; */
 
-  --terminal-closed-transform: translateY(0);
-  --terminal-opened-transform: translateY(calc(var(--terminal-height) + var(--terminal-offscreen-shift)));
 
   --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
   --text-glow-default: 0px 0px 8px #666666;
-  /* --text-glow-highlight: 0px 0px 8px rgba(232, 99, 0, 0.8); */
   --text-glow-highlight: 0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8);
   --glow-white: drop-shadow(var(--text-glow-default));
   --glow-highlight: drop-shadow(var(--text-glow-highlight));
@@ -50,22 +43,9 @@ body {
 }
 
 
-.debug {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-
-  height: 100px;
-  width: var(--terminal-width);
-  outline: 1px solid red;
-}
-
 .Terminal--container {
   box-sizing: border-box;
   position: relative;
-
-  /* default to offscreen so that animation/transforms don't all need -1 * ... */
-  top: calc(-1 * (var(--terminal-height) + var(--terminal-offscreen-shift)));
 
   min-height: var(--terminal-height);
   height: var(--terminal-height);
@@ -76,12 +56,6 @@ body {
   max-width: var(--terminal-width);
 
   background-color: var(--terminal-bg-color);
-
-  box-shadow: 0 0 25px #000000;
-  border: var(--terminal-border-width) solid var(--battletech-grey);
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  border-top: none;
 
   overflow: hidden;
 }
@@ -107,22 +81,6 @@ body {
   animation: terminal-drift 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0);
 }
 
-.Terminal--opening {
-  animation: 3s ease-in terminal-open;
-}
-
-.Terminal--opened {
-  transform: var(--terminal-opened-transform);
-}
-
-.Terminal--closing {
-  animation: 2s ease-out terminal-close;
-}
-
-.Terminal--closed {
-  transform: var(--terminal-closed-transform);
-}
-
 
 @keyframes terminal-drift {
   0% {
@@ -133,40 +91,5 @@ body {
   100% {
     -webkit-mask-position: 0 var(--terminal-height);
     mask-position: 0 var(--terminal-height);
-  }
-}
-
-/**
- * opening/closing animations
- */
-@keyframes terminal-open {
-  0% {
-    transform: var(--terminal-closed-transform);
-  }
-
-  15% {
-    transform: translateY(calc(0.7 * var(--terminal-height)));
-  }
-
-  20% {
-    transform: translateY(calc(0.65 * var(--terminal-height)));
-  }
-
-  100% {
-    transform: var(--terminal-opened-transform);
-  }
-}
-
-@keyframes terminal-close {
-  0% {
-    transform: var(--terminal-opened-transform);
-  }
-
-  40% {
-    transform: translateY(calc(0.3 * var(--terminal-height)));
-  }
-
-  100% {
-    transform: var(--terminal-closed-transform);
   }
 }

@@ -30,7 +30,7 @@ export default class GridCell {
 
 
   // @returns {Promise}
-  show(contentId) {
+  show(contentId, { delay } = {}) {
     const { content, spec } = this.content[contentId] || {};
 
     if (!content) {
@@ -39,10 +39,12 @@ export default class GridCell {
       throw new Error('GridCell is not on an edge!');
     }
 
-    return this.animateIn(content, spec);
+    return this.animateIn(content, spec, {
+      delay,
+    });
   }
 
-  hide(contentId) {
+  hide(contentId, { delay } = {}) {
     const { content, spec } = this.content[contentId] || {};
 
     if (!content) {
@@ -51,7 +53,9 @@ export default class GridCell {
       throw new Error('GridCell is not on an edge!');
     }
 
-    return this.animateOut(content, spec);
+    return this.animateOut(content, spec, {
+      delay,
+    });
   }
 
   addPanel(contentId, {
@@ -64,37 +68,49 @@ export default class GridCell {
     const panel = new Panel({ height, width });
     const spec = this.getSpec(preferredAnimationAxis);
     const { from, animationDimensionName } = spec;
-    const length = panel.$el.css(animationDimensionName);
+    // console.log('length(%o): %o', animationDimensionName, length)
     const contentObj = {
       id: contentId,
       content: panel,
       spec,
     };
 
+
+    function getLength() {
+      const defaultLength = `var(--min-${animationDimensionName})`;
+      const elLength = panel.$el.css(animationDimensionName);
+      return parseInt(elLength, 10)
+        ? elLength
+        : defaultLength;
+    }
+
+
     if (center) {
       if (spec.animationAxis === 'y') {
         panel.$el.css({
           left: '50%',
-          transform: `${panel.$el.css('transform')} translateX(-50%)`,
+          transform: `translateX(-50%)`,
         });
       } else {
         panel.$el.css({
           top: '50%',
-          transform: `${panel.$el.css('transform')} translateY(-50%)`,
+          transform: `translateY(-50%)`,
         });
       }
     }
 
     this.content[contentId] = contentObj;
 
-    panel.addContent(content);
-    panel.$el.css({
-      [from]: `calc(-1 * (${length} + ${this.offscreenShift}))`,
-    });
-
     this.$el.append(panel.$el);
 
-    return this;
+    panel.addContent(content);
+    console.log('after adding panel content, height: %o', panel.$el.css('height'))
+
+    panel.$el.css({
+      [from]: `calc(-1 * (${getLength()} + ${this.offscreenShift}))`,
+    });
+
+    return panel;
   }
 
   // requires content.animationAxis
@@ -159,7 +175,7 @@ export default class GridCell {
 
   // expects an object with an $el
   // @returns {Promise}
-  animateIn(content, spec) {
+  animateIn(content, spec, { delay = 0 } = {}) {
     const { animationDimensionName, translate } = spec;
     const length = content.$el.css(animationDimensionName);
     // cell will need to know orientation for correct entry/exit animations
@@ -176,14 +192,16 @@ export default class GridCell {
     }
 
     return new Promise((resolve) => {
-      const animation = content.$el[0].animate(contentEnter, contentEnterTiming);
-      animation.onfinish = resolve;
+      setTimeout(() => {
+        const animation = content.$el[0].animate(contentEnter, contentEnterTiming);
+        animation.onfinish = resolve;
+      }, delay);
     });
   }
 
   // expects an object with an $el
   // @returns {Promise}
-  animateOut(content, spec) {
+  animateOut(content, spec, { delay = 0 } = {}) {
     const { animationDimensionName, translate } = spec;
     const length = content.$el.css(animationDimensionName);
 
@@ -200,8 +218,10 @@ export default class GridCell {
     };
 
     return new Promise((resolve) => {
-      const animation = content.$el[0].animate(contentExit, contentExitTiming);
-      animation.onfinish = resolve;
+      setTimeout(() => {
+        const animation = content.$el[0].animate(contentExit, contentExitTiming);
+        animation.onfinish = resolve;
+      }, delay);
     });
   }
 }

@@ -40,3 +40,8 @@ todo:
   - successive calls reset widget (i.e. refresh page) so still have timing issue
 - [ ] experiment with webhooks? or something?
 - [ ] should this all be reactified?
+
+### bugs
+SmolaGaming: !gifttier1
+SmolaGamingBot: The user could not be found
+SmolaGaming: It's your lucky day, @$arg1username. You just got a free box. Don't you wanna know what's inside? !openbox1kb
