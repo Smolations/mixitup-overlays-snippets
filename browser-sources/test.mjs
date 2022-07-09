@@ -16,19 +16,19 @@ page.ready(async (grid) => {
   });
   const panel = gridCell.addPanel('testPanel', {
     // animationAxis: 'x',
-    // content: terminal,
-    height: '300px',
-    width: '150%',
+    content: terminal,
+    // height: '300px',
+    // width: '150%',
     center: true,
   });
 
 
   // panel.addContent(terminal);
 
-  console.log('opening')
+  console.log('[test.mjs] opening')
   // setTimeout(() => gridCell.show('testPanel'), 5000)
   await gridCell.show('testPanel');
-  console.log('open!');
+  console.log('[test.mjs] open!');
   // await gridCell.hide('testPanel');
 
   // $('body').css({

@@ -181,8 +181,9 @@ export default class Panel {
       console.log({ contentWidth });
       if (parseInt(contentWidth, 10)) {
         setTimeout(() => {
-          console.log('content rect: %o', content.$el[0].getBoundingClientRect())
-          // this.$el.css('width', `calc(2 * var(--x-offset) + var(--terminal-width))`);
+          console.log('[Panel] (+10ms) content rect: %o', content.$el[0].getBoundingClientRect())
+          console.log('not setting any styles...')
+          this.$el.css('width', contentWidth);
         }, 10);
       }
     }

@@ -68,7 +68,7 @@ export default class GridCell {
     const panel = new Panel({ height, width });
     const spec = this.getSpec(preferredAnimationAxis);
     const { from, animationDimensionName } = spec;
-    // console.log('length(%o): %o', animationDimensionName, length)
+    // console.log('[GridCell] length(%o): %o', animationDimensionName, length)
     const contentObj = {
       id: contentId,
       content: panel,
@@ -104,7 +104,7 @@ export default class GridCell {
     this.$el.append(panel.$el);
 
     panel.addContent(content);
-    console.log('after adding panel content, height: %o', panel.$el.css('height'))
+    console.log('[GridCell] after adding panel content, height: %o', panel.$el.css('height'))
 
     panel.$el.css({
       [from]: `calc(-1 * (${getLength()} + ${this.offscreenShift}))`,

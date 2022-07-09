@@ -29,6 +29,17 @@ class Terminal {
   lineYPadding = `calc(0.15 * ${this.fontSize})`;
   offscreenShift = `calc(0.5 * ${this.fontSize})`;
 
+  mask = 'repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px)';
+  textGlowDefault = '0px 0px 8px #666666';
+  textGlowHighlight = '0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8)';
+  glowWhite = `drop-shadow(${this.textGlowDefault})`;
+  glowHighlight = `drop-shadow(${this.textGlowHighlight})`;
+
+
+  get height() {
+    return this.$el.css('height');
+  }
+
   get heightCalc() {
     /* extra padding for first/last lines */
     return `calc(
@@ -37,39 +48,13 @@ class Terminal {
     )`.replaceAll(/\s{2,}/g, ' ').trim();
   }
 
+  get width() {
+    return this.$el.css('width');
+  }
+
   get widthCalc() {
     return `calc((2 * ${this.lineXPadding}) + (${this.columns} * 1ch))`;
   }
-//   --terminal-rows: 2; /* number of lines visible */
-//   --terminal-columns: 20; /* number of characters per line */
-//
-//   --terminal-color: #ffffff;
-//   --terminal-bg-color: rgba(0, 0, 0, 0.75);
-//   --terminal-highlight-color: var(--reentry-orange);
-//
-//   --terminal-font-size: 32px; /* 32px is 100cols at 1080p */
-//   --terminal-line-horizontal-padding: 1ch;
-//   --terminal-line-vertical-padding: calc(0.15 * var(--terminal-font-size));
-//   --terminal-offscreen-shift: calc(0.5 * var(--terminal-font-size)); /* off screen when closed */
-//   --terminal-height: calc(
-//     ((1 + (var(--terminal-rows))) * (2 * var(--terminal-line-vertical-padding))) /* extra padding for first/last lines */
-//     + (var(--terminal-rows) * var(--terminal-font-size))
-//   );
-  // --terminal-width: calc(
-  //   (2 * var(--terminal-line-horizontal-padding))
-  //   + (var(--terminal-columns) * 1ch)
-  // );
-
-  mask = 'repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px)';
-  textGlowDefault = '0px 0px 8px #666666';
-  textGlowHighlight = '0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8)';
-  glowWhite = `drop-shadow(${this.textGlowDefault})`;
-  glowHighlight = `drop-shadow(${this.textGlowHighlight})`;
-  // --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
-  // --text-glow-default: 0px 0px 8px #666666;
-  // --text-glow-highlight: 0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8);
-  // --glow-white: drop-shadow(var(--text-glow-default));
-  // --glow-highlight: drop-shadow(var(--text-glow-highlight));
 
   #sessionLines = [];
 
@@ -94,12 +79,12 @@ class Terminal {
 
     this.$el.append(this.$terminal);
 
-    this.startTerminalDrift();
-
     // terminals usually start up with an empty line
     if (prompt) {
       this.addPrompt();
     }
+
+    this.startTerminalDrift();
   }
 
 
@@ -137,6 +122,7 @@ class Terminal {
         position: 'relative',
 
         minHeight: this.heightCalc,
+        '--terminal-height': this.heightCalc,
         height: this.heightCalc,
         maxHeight: this.heightCalc,
 
@@ -153,13 +139,13 @@ class Terminal {
 
   async startTerminalDrift() {
     this.driftStarted = true;
-    console.log('start drifting');
+    console.log('[Terminal] start drifting');
     const now = Date.now();
 
     await new Promise((resolve) => {
       const interval = setInterval(() => {
         if (parseInt(this.$el.css('height'), 10)) {
-          console.log('wait time: %o', Date.now() - now);
+          console.log('[Terminal] wait time: %o', Date.now() - now);
           this.driftStarted = false;
           clearInterval(interval);
           resolve();
@@ -173,8 +159,8 @@ class Terminal {
         '-webkit-mask-position': '0 0',
       },
       {
-        'mask-position': `0 ${this.heightCalc}`,
-        '-webkit-mask-position': `0 ${this.heightCalc}`,
+        'mask-position': `0 ${this.height}`,
+        '-webkit-mask-position': `0 ${this.height}`,
       },
     ];
     const terminalDriftTiming = {
@@ -184,8 +170,12 @@ class Terminal {
       direction: 'alternate',
     };
 
-    console.log('animate with height(%o)! %o', this.heightCalc, terminalDrift);
-    this.$terminal[0].animate(terminalDrift, terminalDriftTiming);
+    console.log('[Terminal] animate with height(%o)! %o', this.height, terminalDrift);
+    const animation = this.$terminal[0].animate(terminalDrift, terminalDriftTiming);
+
+    // setInterval(() => {
+    //   console.log('animation.currentTime: %o', animation.currentTime)
+    // }, 500);
   }
 
   // @returns {Stdin}
