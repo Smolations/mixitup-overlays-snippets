@@ -22,7 +22,7 @@ const page = new Page({
 page.ready(async (grid) => {
   console.log(grid)
   const cell = grid.cell(0, 2); console.log('cell: %o', cell)
-  const terminal = new Terminal({ rows: 2, columns: 20 });
+  const terminal = new Terminal({ rows: 3, columns: 20 });
   const panel = cell.addPanel('latest', {
     content: terminal,
   });

@@ -71,25 +71,11 @@ export default class Stdout extends TerminalLine {
         lastOutputArg(this, resolve);
       } else {
         const $code = this.$getTerminalLine(...this.#output);
-        console.log('[Stdout] appending: %o', $code)
 
         this.$el.append($code);
         resolve();
       }
     });
-
-    if (typeof(lastOutputArg) === 'function') {
-      return new Promise((resolve) => {
-        lastOutputArg(this, resolve);
-      });
-    } else {
-      return new Promise((resolve) => {
-        const $code = this.$getTerminalLine(...this.#output);
-
-        this.$el.append($code);
-        resolve();
-      });
-    }
   }
 
   // @returns {jQuery}

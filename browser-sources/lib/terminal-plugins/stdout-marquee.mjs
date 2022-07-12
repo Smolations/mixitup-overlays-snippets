@@ -2,7 +2,7 @@ export default function StdOutMarquee({ stdoutArgs, numRenders, speed = 200 }) {
   return (stdout, resolve) => {
     const $output = stdout.$getTerminalLine(...stdoutArgs);
     const $separator = $('<code>   ...   </code>');
-    const numCols = stdout.terminal.var('columns');
+    const numCols = stdout.parent.columns;
     let renderCount = 1;
     let leftCount = numCols;
 

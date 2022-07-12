@@ -178,7 +178,7 @@ page.ready(async (grid) => {
       break;
 
     case 'newFollower':
-      terminal = new Terminal({ rows: 4, columns: 40 });
+      terminal = new Terminal({ rows: 5, columns: 40 });
       session = processNewFollower(queryParams);
       break;
 
@@ -189,7 +189,7 @@ page.ready(async (grid) => {
 
     case 'raid':
       session = processRaid(queryParams);
-      terminal = new Terminal({ rows: 4, columns: 40 });
+      terminal = new Terminal({ rows: 5, columns: 40 });
       break;
   }
 

@@ -74,8 +74,8 @@ export default class Panel extends Component() {
         ...this.cssVars,
         ...this.panelCommonCss,
         position: 'absolute', // must have in order for content to fill container
-        top: 0,
-        left: 0,
+        // top: 0,
+        // left: 0,
         height,
         width,
         padding: `var(--y-offset) var(--x-offset)`,

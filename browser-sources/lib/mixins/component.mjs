@@ -64,7 +64,10 @@ const Component = (SuperClass = class {}) =>
     }
 
     addChild(...components) {
-      this.children.push(...components);
+      components.forEach((component) => {
+        component.parent = this;
+        this.children.push(component);
+      });
     }
 
     append(component) {

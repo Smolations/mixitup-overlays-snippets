@@ -1,6 +1,7 @@
-.Terminal--container {
+.Panel {
   /* position: absolute; */
   right: 1ch;
+  left: initial; /* can't set this from here since styles inline */
 }
 
 .Terminal--marquee {
