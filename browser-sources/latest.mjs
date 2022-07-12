@@ -6,6 +6,7 @@ import StdoutMarquee from './lib/terminal-plugins/stdout-marquee.mjs';
 
 
 const page = new Page({
+  grid: { rows: 3, cols: 3 },
   assets: [
     ...Terminal.assets,
     './latest.css',
@@ -18,16 +19,21 @@ const page = new Page({
  *
  * Determine subject for processing.
  */
-page.ready(async () => {
-  const queryParams = new URLSearchParams(window.location.search);
+page.ready(async (grid) => {
+  console.log(grid)
+  const cell = grid.cell(0, 2); console.log('cell: %o', cell)
   const terminal = new Terminal({ rows: 2, columns: 20 });
+  const panel = cell.addPanel('latest', {
+    content: terminal,
+  });
+  const queryParams = new URLSearchParams(window.location.search);
   window.terminal = terminal;
 
   const follower = queryParams.get('follower');
   const subscriber = queryParams.get('subscriber');
 
   // this fixes the terminal sizing problem... somehow...browser paint-related?
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  // await new Promise((resolve) => setTimeout(resolve, 100));
 
   const {
     left: terminalLeft,
@@ -89,20 +95,24 @@ page.ready(async () => {
   // console.log('terminal.rect.width (pre-open): %o', terminal.rect.width)
   // console.log('test.rect.left (pre-open): %o', $test[0].getBoundingClientRect().left)
 
+  page.render($('body'));
+
   mySparks.play();
   sparksLeft.play();
   sparksRight.play();
-  await terminal.open();
 
   // console.log('terminal.rect.left (post-open): %o', terminal.rect.left)
+  await panel.show();
 
-  await terminal.command(
-    terminal.stdin('marquee --latest'),
-    terminal.stdout(StdoutMarquee({
-      numRenders: 2,
-      stdoutArgs: ['follower: %h subscriber: %h', follower, subscriber],
-    })),
-  );
+  await terminal.session((command) => {
+    command((stdin, stdout) => {
+      stdin('marquee --latest');
+      stdout(StdoutMarquee({
+        numRenders: 2,
+        stdoutArgs: ['follower: %h subscriber: %h', follower, subscriber],
+      }));
+    });
+  });
 
-  terminal.close();
+  await panel.hide();
 });

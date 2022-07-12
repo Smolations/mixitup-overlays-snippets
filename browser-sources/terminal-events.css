@@ -1,8 +1,0 @@
-.Terminal--container {
-  left: calc((100% - var(--terminal-width)) / 2);
-
-  background-image: url('img/monogram_white.png');
-  background-repeat: no-repeat;
-  background-size: 10%;
-  background-position: bottom 10px right 10px;
-}

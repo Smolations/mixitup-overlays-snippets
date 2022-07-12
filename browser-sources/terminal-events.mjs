@@ -4,18 +4,21 @@ import Terminal from './components/Terminal/Terminal.mjs';
 
 
 const page = new Page({
+  grid: { rows: 3, cols: 3 },
   assets: [
     ...Terminal.assets,
-    './terminal-events.css',
+    // './terminal-events.css',
   ],
 });
 
+function render() {
+  page.render($('body'));
+}
 
 
 
 // ?subject=drive&username=chode&name=PNY 1kb drive&base=37&bonus=13&target=bytes
-async function processDrive(params, playSparks) {
-  const terminal = new Terminal({ rows: 6, columns: 40 });
+function processDrive(params) {
   const sanitizedName = params.get('name').toLowerCase().replaceAll(' ', '_');
   const username = params.get('username');
   const bytesBase = Number(params.get('base'));
@@ -27,78 +30,81 @@ async function processDrive(params, playSparks) {
 
   bytesBonus && bytesFiles.push(`${bytesBonus}.${targetPrize}`);
 
-  playSparks(terminal);
-  await terminal.open();
-
-  await terminal.command(terminal.stdin(`mkdir ${folderName}`));
-  await terminal.command(terminal.stdin(`mount /dev/sdb1 ${folderName}`));
-  await terminal.command(
-    terminal.stdin(`cd ${folderName} && ls -la`),
-    terminal.stdout('%h.tar.gz', username),
-  );
-  await terminal.command(
-    terminal.stdin(`tar -xvf ${username}.tar.gz`),
-    ...bytesFiles.map((out) => terminal.stdout('%h', out)),
-  );
-
-  terminal.close(5000);
+  return (command) => {
+    command((stdin) => {
+      stdin(`mkdir ${folderName}`);
+    });
+    command((stdin) => {
+      stdin(`mount /dev/sdb1 ${folderName}`);
+    });
+    command((stdin, stdout) => {
+      stdin(`cd ${folderName} && ls -la`);
+      stdout('%h.tar.gz', username);
+    });
+    command((stdin, stdout) => {
+      stdin(`tar -xvf ${username}.tar.gz`);
+      bytesFiles.forEach((out) => stdout('%h', out));
+    });
+  };
+//
+//
+//   await terminal.command(terminal.stdin(`mkdir ${folderName}`));
+//   await terminal.command(terminal.stdin(`mount /dev/sdb1 ${folderName}`));
+//   await terminal.command(
+//     terminal.stdin(`cd ${folderName} && ls -la`),
+//     terminal.stdout('%h.tar.gz', username),
+//   );
+//   await terminal.command(
+//     terminal.stdin(`tar -xvf ${username}.tar.gz`),
+//     ...bytesFiles.map((out) => terminal.stdout('%h', out)),
+//   );
+//
+//   terminal.close(5000);
 }
 
 // ?subject=newFollower&username=poob
-async function processNewFollower(params, playSparks) {
-  const terminal = new Terminal({ rows: 5, columns: 40 });
+function processNewFollower(params) {
   const username = params.get('username');
 
-  playSparks(terminal);
-  await terminal.open();
-
-  await terminal.command(
-    terminal.stdin('latest_follower --welcome'),
-    terminal.stdout('welcome %h, you have followed. now go clean the lavoratory.', username),
-  );
-
-  terminal.close(5000);
+  return (command) => {
+    command((stdin, stdout) => {
+      stdin('latest_follower --welcome');
+      stdout('welcome %h, you have followed. now go clean the lavoratory.', username);
+    });
+  };
 }
 
 // ?subject=newSubscriber&username=poob
-async function processNewSubscriber(params, playSparks) {
-  const terminal = new Terminal({ rows: 5, columns: 40 });
+function processNewSubscriber(params) {
   const username = params.get('username');
   const formatStr = `
     %h, your credits have been accepted. enjoy your new esmojis and this
     complimentary message.
   `.replaceAll(/\s+/g, ' ').trim();
 
-  playSparks(terminal);
-  await terminal.open();
-
-  await terminal.command(
-    terminal.stdin('latest_subscriber --welcome'),
-    terminal.stdout(formatStr, username),
-  );
-
-  terminal.close(5000);
+  return (command) => {
+    command((stdin, stdout) => {
+      stdin('latest_subscriber --welcome');
+      stdout(formatStr, username);
+    });
+  };
 }
 
 // ?subject=raid&username=SneakyFoxtrot&raidCount=7
-async function processRaid(params, playSparks) {
-  const terminal = new Terminal({ rows: 5, columns: 40 });
+function processRaid(params) {
   const username = params.get('username');
   const raidCount = params.get('raidCount');
 
-  playSparks(terminal);
-  await terminal.open();
-
-  await terminal.command(
-    terminal.stdin('raid --welcome'),
-    terminal.stdout(
-      'oh damn! %h just raided with %h viewers! shit, are my genitals showing?',
-      username,
-      raidCount,
-    ),
-  );
-
-  terminal.close(5000);
+  return (command) => {
+    command((stdin, stdout) => {
+      stdin('raid --welcome');
+      stdout(
+        'oh damn! %h just raided with %h viewers! shit, are my genitals showing?',
+        username,
+        raidCount,
+      );
+    });
+  };
 }
 
 
@@ -107,8 +113,14 @@ async function processRaid(params, playSparks) {
  *
  * Determine subject for processing.
  */
-page.ready(async () => {
+page.ready(async (grid) => {
   const queryParams = new URLSearchParams(window.location.search);
+  const cell = grid.cell(0, 1);
+  const panel = cell.addPanel('terminalEvent', {
+    center: true,
+  });
+  let terminal;
+  let session;
 
   // need sparks on top of terminal (maybe eventually ensure Terminal
   // is always prepended and sparks always appended to body?) so will
@@ -158,21 +170,35 @@ page.ready(async () => {
     });
   }
 
+
   switch (queryParams.get('subject')) {
     case 'drive':
-      processDrive(queryParams, playSparks);
+      terminal = new Terminal({ rows: 6, columns: 40 });
+      session = processDrive(queryParams);
       break;
 
     case 'newFollower':
-      processNewFollower(queryParams, playSparks);
+      terminal = new Terminal({ rows: 4, columns: 40 });
+      session = processNewFollower(queryParams);
       break;
 
     case 'newSubscriber':
-      processNewSubscriber(queryParams, playSparks);
+      terminal = new Terminal({ rows: 5, columns: 40 });
+      session = processNewSubscriber(queryParams);
       break;
 
     case 'raid':
-      processRaid(queryParams, playSparks);
+      session = processRaid(queryParams);
+      terminal = new Terminal({ rows: 4, columns: 40 });
       break;
   }
+
+  panel.addChild(terminal);
+  render();
+
+  playSparks(terminal);
+
+  await panel.show();
+  await terminal.session(session);
+  await panel.hide({ delay: 5000 });
 });

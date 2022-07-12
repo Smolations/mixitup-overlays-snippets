@@ -35,6 +35,14 @@ const Component = (SuperClass = class {}) =>
       }
     }
 
+    get rect() {
+      return this.$el[0].getBoundingClientRect();
+    }
+
+    get $childrenContainer() {
+      return this.$el;
+    }
+
 
     constructor({ ...superOpts } = {}) {
       super(superOpts);
@@ -60,11 +68,11 @@ const Component = (SuperClass = class {}) =>
     }
 
     append(component) {
-      this.$el.append(component.$el);
+      this.$childrenContainer.append(component.$el);
     }
 
     prepend(component) {
-      this.$el.prepend(component.$el);
+      this.$childrenContainer.prepend(component.$el);
     }
     // push(component) {
     //   this.

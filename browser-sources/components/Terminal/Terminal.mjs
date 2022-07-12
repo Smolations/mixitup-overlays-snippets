@@ -29,12 +29,6 @@ class Terminal extends Component() {
   fontSize = '32px'; /* 32px is 100cols at 1080p */
   lineXPadding = Stdin.horizontalPadding;
   lineYPadding = Stdin.verticalPadding;
-  offscreenShift = `calc(0.5 * ${this.fontSize})`;
-
-  textGlowDefault = '0px 0px 8px #666666';
-  textGlowHighlight = '0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8)';
-  glowWhite = `drop-shadow(${this.textGlowDefault})`;
-  glowHighlight = `drop-shadow(${this.textGlowHighlight})`;
 
 
   get height() {
@@ -49,10 +43,6 @@ class Terminal extends Component() {
     return `calc(
       ${containerPadding} + (${this.rows} * ${terminalLineHeight})
     )`.replaceAll(/\s{2,}/g, ' ').trim();
-    // return `calc(
-    //   ((1 + (${this.rows})) * (2 * ${this.lineYPadding}))
-    //   + (${this.rows} * ${this.fontSize})
-    // )`.replaceAll(/\s{2,}/g, ' ').trim();
   }
 
   get width() {
@@ -63,12 +53,13 @@ class Terminal extends Component() {
     return `calc((2 * ${this.lineXPadding}) + (${this.columns} * 1ch))`;
   }
 
-  #buffer = [];
-
-
-  get rect() {
-    return this.$terminalContainer[0].getBoundingClientRect();
+  get $childrenContainer() {
+    return this.$terminal;
   }
+
+
+  #commandBuffer = [];
+  #inOutBuffer = [];
 
 
   constructor({
@@ -136,10 +127,10 @@ class Terminal extends Component() {
 
         fontSize: this.fontSize,
         backgroundColor: this.bgColor,
-
         overflow: 'hidden',
       });
   }
+
 
   // @returns {Stdin}
   stdin(inputText) {
@@ -151,59 +142,79 @@ class Terminal extends Component() {
 
     // want to later inspect class type so maybe hold onto
     // input text?
-    return lastLine.input(inputText);
+    this.#inOutBuffer.push(lastLine.input(inputText));
+
+    return lastLine;
   }
 
   // passthrough for now..
   // @returns {Stdout}
   stdout(...args) {
-    const stdout = new Stdout(this);
-    return stdout.output(...args);
+    const stdout = new Stdout();
+    this.#inOutBuffer.push(stdout.output(...args));
+    return stdout;
   }
 
-  // need separate TerminalCommand class?
-  // @returns {Promise}
-  command(stdin, ...stdouts) {
-    let promise = stdin.renderText();
-
-    stdouts.forEach((stdout) => {
-      promise = promise.then(() => {
-        this.addTerminalLine(stdout);
-        return stdout.render(this);
-      });
-    });
-
-    return promise.then(() => this.addPrompt());
-  }
-
-  command(callback) {
+  // terminal.session((command) => {...})
+  session(callback) {
     return new Promise((resolve) => {
-      // store to buffer?
-      callback(this.stdin, this.stdout);
+      // calling command((stdin, stdout) => {...})
+      callback(
+        // (cmdCallback) => this.command(cmdCallback),
+        (cmdCallback) => this.#commandBuffer.push(cmdCallback),
+      );
 
       // run through buffer
+      this.processCommandBuffer().then(resolve);
     });
-    let promise = stdin.renderText();
+  }
 
-    stdouts.forEach((stdout) => {
+  // @returns {Promise}
+  processInOutBuffer() {
+    const bufferLength = this.#inOutBuffer.length;
+    let promise = Promise.resolve();
+
+    for (let i = 0; i < bufferLength; i++) {
+      const line = this.#inOutBuffer.shift();
+      this.addTerminalLine(line);
+      promise = promise.then(() => line.exec());
+    }
+
+    return promise;
+  }
+
+  processCommandBuffer() {
+    const bufferLength = this.#commandBuffer.length;
+    let promise = Promise.resolve();
+
+    for (let i = 0; i < bufferLength; i++) {
+      const command = this.#commandBuffer.shift();
+
       promise = promise.then(() => {
-        this.addTerminalLine(stdout);
-        return stdout.render(this);
-      });
-    });
+        command(
+          (...args) => this.stdin(...args),
+          (...args) => this.stdout(...args),
+        );
 
-    return promise.then(() => this.addPrompt());
+        return this.processInOutBuffer().then(() => this.addPrompt());
+      });
+    }
+
+    return promise;
   }
 
 
   addTerminalLine(line) {
-    this.children.push(line);
-    this.$terminal.append(line.$el);
+    if (!this.children.includes(line)) {
+      console.log('[Terminal addTerminalLine] adding: %o', line)
+      this.addChild(line);
+      this.append(line);
+    }
   }
 
   // @returns {Stdin}
   addPrompt() {
-    const stdin = new Stdin(this);
+    const stdin = new Stdin();
 
     this.addTerminalLine(stdin);
 
@@ -217,11 +228,6 @@ class Terminal extends Component() {
     }
     return this.$root.css(this.vars[varName]);
   }
-
-  // render(...args) {
-  //   super.render(...args);
-  //   // debugger;
-  // }
 }
 
 

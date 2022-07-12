@@ -24,33 +24,25 @@ page.ready(async (grid) => {
     rows: 4,
     columns: 18,
   });
-  // const panel = gridCell.addPanel('testPanel', {
-  //     // animationAxis: 'x',
-  //     // content: terminal,
-  //     // height: '300px',
-  //     // width: '150%',
-  //     center: true,
-  //   });
+  const panel = gridCell.addPanel('testPanel', {
+    // animationAxis: 'x',
+    content: terminal,
+    // height: '300px',
+    // width: '150%',
+    center: true,
+  });
   // window.panel = panel;
 
-  gridCell.addChild(terminal);
+  // gridCell.addChild(terminal);
 
   // panel.addContent(terminal);
 
   // only pages need to fake a Component instance
   page.render($('body'));
 
-  // await terminal.command(terminal.stdin('first input'), terminal.stdout('with some output'))
-  await terminal.command(terminal.stdin('third input'))
-
-  await terminal.command((stdin, stdout) => {
-    stdin('first input');
-    stdout('with some output');
-  });
-
 
   // console.log('after page render, panel height: %o', panel.$el.css('height'))
-  // await panel.show();
+  await panel.show();
   // console.log('after animateIn, panel width: %o', panel.$el.css('width'))
   // console.log('[test.mjs] opening')
   // setTimeout(() => panel.animateIn(), 0) // somewhere between 30-50 needed.. =/
@@ -58,4 +50,14 @@ page.ready(async (grid) => {
   // await gridCell.show('testPanel');
   // console.log('[test.mjs] open!');
   // await gridCell.hide('testPanel');
+
+  // await terminal.command(terminal.stdin('first input'), terminal.stdout('with some output'))
+  // await terminal.command(terminal.stdin('third input'))
+
+  await terminal.command((stdin, stdout) => {
+    stdin('first input');
+    stdout('with some %h output', 'longer');
+  });
+
+  console.log('terminal: %o', terminal)
 });

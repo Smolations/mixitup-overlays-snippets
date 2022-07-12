@@ -8,7 +8,7 @@ export default class Stdin extends TerminalLine {
   ];
 
   #keySounds = [];
-  #input = '';
+  inputText = '';
 
 
   constructor(...args) {
@@ -45,16 +45,16 @@ export default class Stdin extends TerminalLine {
   // if necessary, maybe create an addText() to incrementally
   // build up the string
   input(text) {
-    this.#input = text;
+    this.inputText = text;
     return this;
   }
 
 
   // may eventually need a way to delay and possibly replace existing output
   // @returns {Promise}
-  renderText(...args) {
+  exec(...args) {
     return new Promise(async (resolve) => {
-      const gen = this.typeGen(this.#input);
+      const gen = this.typeGen(this.inputText);
 
       for await (let str of gen) {
         const keyIndex = Math.floor(Math.random() * this.#keySounds.length);

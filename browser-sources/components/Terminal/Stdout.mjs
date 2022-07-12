@@ -18,7 +18,7 @@ export default class Stdout extends TerminalLine {
     this.$el
       .addClass('Stdout')
       .css({
-        lineHeight: '1.1',
+        lineHeight: '1.15', // somehow helps multiline heights match multiple single line heights
       });
   }
 
@@ -63,10 +63,20 @@ export default class Stdout extends TerminalLine {
   }
 
   // printf only works here for output
-  render(parentComponent) {
-    super.render(parentComponent);
+  exec() {
     const lastOutputArg = this.#output.at(-1); // or check for only function?
 
+    return new Promise((resolve) => {
+      if (typeof(lastOutputArg) === 'function') {
+        lastOutputArg(this, resolve);
+      } else {
+        const $code = this.$getTerminalLine(...this.#output);
+        console.log('[Stdout] appending: %o', $code)
+
+        this.$el.append($code);
+        resolve();
+      }
+    });
 
     if (typeof(lastOutputArg) === 'function') {
       return new Promise((resolve) => {
