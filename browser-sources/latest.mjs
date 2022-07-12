@@ -97,9 +97,9 @@ page.ready(async (grid) => {
 
   page.render($('body'));
 
-  mySparks.play();
-  sparksLeft.play();
-  sparksRight.play();
+  // mySparks.play();
+  // sparksLeft.play();
+  // sparksRight.play();
 
   // console.log('terminal.rect.left (post-open): %o', terminal.rect.left)
   await panel.show();

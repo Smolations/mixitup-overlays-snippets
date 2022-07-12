@@ -1,11 +1,14 @@
 import Component from '../../lib/mixins/component.mjs';
 
+import Sparks from '../Sparks.mjs';
+
 export default class Panel extends Component() {
   static assets = [
     // './components/Panel/Panel.css',
   ];
 
   specs;
+  sparksOpen = [];
 
   // hiding any lingering shadow from hidden content
   offscreenShift = '10px';
@@ -186,6 +189,49 @@ export default class Panel extends Component() {
     return $wrapper.append($frameTop, $frameBottom);
   }
 
+  getSparks() {
+    const panelLeft = this.rect.left;
+    const panelWidth = this.rect.width;
+
+    const sparksMiddle = new Sparks({
+      id: 'middleSparks',
+      top: -5,
+      left: [panelLeft + 100, panelLeft + 300],
+      speed: 80,
+      duration: 4000, // opening animation is 3s
+      scaleFactor: [0.2, 0.4],
+      sparkDuration: [300, 600],
+      frequency: 3,
+      rotationVariation: Math.PI * (1 / 8),
+    });
+
+    const sparksLeft = new Sparks({
+      id: 'sparksLeft',
+      top: -5,
+      left: panelLeft,
+      speed: 60,
+      duration: 4000, // opening animation is 3s
+      scaleFactor: [0.5, 0.7],
+      sparkDuration: [100, 800],
+      frequency: 4,
+      rotationVariation: Math.PI * (1 / 8),
+    });
+
+    const sparksRight = new Sparks({
+      id: 'sparksRight',
+      top: -5,
+      left: panelLeft + panelWidth,
+      speed: 30,
+      duration: 4000, // opening animation is 3s
+      scaleFactor: [0.5, 0.7],
+      sparkDuration: [100, 750],
+      frequency: 2,
+      rotationVariation: Math.PI * (1 / 8),
+    });
+
+    this.sparksOpen.push(sparksLeft, sparksMiddle, sparksRight);
+  }
+
 
   positionOffscreen() {
     const gridSpec = this.getSpec();
@@ -230,6 +276,7 @@ export default class Panel extends Component() {
 
     this.positionCrossAxis();
     this.positionOffscreen();
+    this.getSparks();
 
     // ensuring this is the last appended element
     this.$el.append(this.$getPanelFrame())
@@ -308,6 +355,8 @@ export default class Panel extends Component() {
           easing: 'ease-in',
           fill: 'forwards',
         };
+
+        this.sparksOpen.forEach((spark) => spark.play());
 
         const animation = this.$el[0].animate(contentEnter, contentEnterTiming);
         animation.onfinish = resolve;
