@@ -1,7 +1,14 @@
-export default class Panel {
+import Component from '../../lib/mixins/component.mjs';
+
+export default class Panel extends Component() {
   static assets = [
     // './components/Panel/Panel.css',
   ];
+
+  specs;
+
+  // hiding any lingering shadow from hidden content
+  offscreenShift = '10px';
 
   xFrameWidth = '10px';
   yFrameWidth = '20px';
@@ -31,26 +38,33 @@ export default class Panel {
     minWidth: 'var(--min-width)',
   };
 
+  crossAxisTransforms = [];
 
-  constructor({ height, width }) {
+  constructor(props = {}) {
+    super();
+
+    const {
+      height,
+      width,
+      gridLocation,
+      center = false,
+      preferredAnimationAxis = 'y',
+    } = props;
+
     this.height = height;
     this.width = width;
+    this.center = center;
+    this.gridLocation = gridLocation;
+    this.preferredAnimationAxis = preferredAnimationAxis;
 
     this.$el = this.$getPanel();
-    this.$frame = this.$getPanelFrame().appendTo(this.$el);
   }
 
   $getPanel() {
-    // minHeight: `calc(2 * ${this.logoOffset} + ${this.logoHeight} + 2 * var(--y-offset))`,
-    // minWidth: `calc(2 * ${this.logoOffset} + ${this.logoWidth})`,
-    /** COME BACK AND FIX THIS */
-    const minHeight = 2 * parseInt(this.logoOffset) + parseInt(this.logoHeight) + 2 * parseInt(this.yFrameWidth);
-    const minWidth = 2 * parseInt(this.logoOffset) + parseInt(this.logoWidth);
     const {
-      // height,// = `${minHeight}px`,
-      height,// = 'var(--min-height)',
-      // width,// = `${minWidth}px`,
-      width,// = `var(--min-width)`,
+      height,
+      width,
+      center,
     } = this;
 
 
@@ -59,13 +73,16 @@ export default class Panel {
       .css({
         ...this.cssVars,
         ...this.panelCommonCss,
-        position: 'relative',
+        position: 'absolute', // must have in order for content to fill container
+        top: 0,
+        left: 0,
         height,
         width,
         padding: `var(--y-offset) var(--x-offset)`,
         backgroundBlendMode: 'hard-light',
         borderRadius: 'var(--border-radius)',
         color: 'white',
+        transform: center ? 'translate(-50%, 0)' : 'translate(0, 0)',
 
         // testing
         // background: 'white',
@@ -169,23 +186,158 @@ export default class Panel {
     return $wrapper.append($frameTop, $frameBottom);
   }
 
-  addContent(content = {}) {
-    // prepend to keep content under frame (and therefore shadow)
-    this.$el.prepend(content?.$el || content);
 
-    // maybe some logic to see if previous content has already
-    // set a width...take the largest of all available. until then..
-    if (content.$el) {
-      // debugger;
-      const contentWidth = content.$el.css('width');
-      console.log({ contentWidth });
-      if (parseInt(contentWidth, 10)) {
-        setTimeout(() => {
-          console.log('[Panel] (+10ms) content rect: %o', content.$el[0].getBoundingClientRect())
-          console.log('not setting any styles...')
-          this.$el.css('width', contentWidth);
-        }, 10);
+  positionOffscreen() {
+    const gridSpec = this.getSpec();
+    const {
+      from,
+      mainAxisDimName,
+    } = gridSpec;
+
+    const defaultLength = `var(--min-${mainAxisDimName})`;
+    const elLength = this.$el.css(mainAxisDimName);
+    const offscreenLength = parseInt(elLength, 10)
+      ? elLength
+      : defaultLength;
+
+    this.$el.css({
+      [from]: `calc(-1 * (${offscreenLength} + ${this.offscreenShift}))`,
+    });
+  }
+
+
+  positionCrossAxis() {
+    const { mainAxis } = this.getSpec();
+
+    if (this.center) {
+      if (mainAxis === 'y') {
+        this.$el.css({
+          left: '50%',
+          transform: `translateX(-50%)`,
+        });
+      } else {
+        this.$el.css({
+          top: '50%',
+          transform: `translateY(-50%)`,
+        });
       }
     }
+  }
+
+
+  render(...args) {
+    super.render(...args);
+
+    this.positionCrossAxis();
+    this.positionOffscreen();
+
+    // ensuring this is the last appended element
+    this.$el.append(this.$getPanelFrame())
+    console.log('[Panel render()] new height: %o', this.$el.css('height'))
+  }
+
+
+  // requires content.animationAxis
+  // or maybe the cell can store metadata via original idea
+  // of storing content dictionary objects instead of
+  // just the content object itself..
+  getSpec() {
+    const { preferredAnimationAxis } = this;
+    this.specs ||= this.buildSpecs();
+
+    const { x: xSpec, y: ySpec } = this.specs;
+    const isCornerCell = (!!xSpec && !!ySpec);
+    const spec = isCornerCell
+      ? this.specs[preferredAnimationAxis]
+      : (xSpec || ySpec);
+
+    if (!spec) {
+      throw new Error('Panel is not within a GridCell on an edge!');
+    }
+
+    return spec;
+  }
+
+  buildSpecs() {
+    const { gridLocation, center } = this;
+    const froms = Object.keys(gridLocation).reduce((fromsArr, from) => {
+      return gridLocation[from] ? [...fromsArr, from] : fromsArr;
+    }, []);
+
+    return froms.reduce((specs, from) => {
+      const dim = ['top', 'bottom'].includes(from) ? 'Y' : 'X';
+      const mainAxis = dim.toLowerCase();
+
+      return {
+        ...specs,
+        [mainAxis]: {
+          from,
+          mainAxis,
+          mainAxisDimName: (dim === 'Y') ? 'height' : 'width',
+          translate: (val) => {
+            const translations = [0, val];
+            if (center) (translations[0] = '-50%');
+            if (mainAxis === 'x') translations.reverse();
+            // const currentTransform = this.$el.css('transform');
+            return `translate(${translations.join(', ')})`;
+            return `translateX(-50%) translate${dim}(${val})`;
+            return `${currentTransform === 'none' ? '' : currentTransform} translate${dim}(${val})`;
+          },
+        },
+      };
+    }, {});
+  }
+
+  // expects an object with an $el
+  // @returns {Promise}
+  show({ delay = 0 } = {}) {
+    console.log('just before animateIn, width: %o', this.$el.css('width'))
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const { mainAxisDimName, translate } = this.getSpec();
+        const length = this.$el.css(mainAxisDimName);
+        console.log('translate(0): %o', translate(0))
+        const contentEnter = [
+          { transform: translate(0) },
+          { offset: 0.15, transform: translate(`calc(0.7 * ${length})`) },
+          { offset: 0.20, transform: translate(`calc(0.65 * ${length})`) },
+          { transform: translate(`calc(${length} + ${this.offscreenShift})`) },
+        ];
+        const contentEnterTiming = {
+          duration: 3000,
+          easing: 'ease-in',
+          fill: 'forwards',
+        };
+
+        const animation = this.$el[0].animate(contentEnter, contentEnterTiming);
+        animation.onfinish = resolve;
+      }, delay);
+    });
+  }
+
+  // expects an object with an $el
+  // @returns {Promise}
+  hide({ delay = 0 } = {}) {
+    const { mainAxisDimName, translate } = this.getSpec();
+    const length = this.$el.css(mainAxisDimName);
+
+    // cell will need to know orientation for correct entry/exit animations
+    const contentExit = [
+      { transform: translate(`calc(${length} + ${this.offscreenShift})`) },
+      { offset: 0.40, transform: translate(`calc(0.3 * ${length})`) },
+      { transform: translate(0) },
+    ];
+    const contentExitTiming = {
+      duration: 2000,
+      easing: 'ease-in',
+      fill: 'forwards',
+    };
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const animation = this.$el[0].animate(contentExit, contentExitTiming);
+        animation.onfinish = resolve;
+      }, delay);
+    });
   }
 }

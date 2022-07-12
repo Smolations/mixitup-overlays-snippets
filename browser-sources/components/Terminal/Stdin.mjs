@@ -14,8 +14,6 @@ export default class Stdin extends TerminalLine {
   constructor(...args) {
     super(...args);
 
-
-    // this.$el = $('<pre>');
     this.$el
       .addClass('Stdin')
       .css({
@@ -54,7 +52,7 @@ export default class Stdin extends TerminalLine {
 
   // may eventually need a way to delay and possibly replace existing output
   // @returns {Promise}
-  render() {
+  renderText(...args) {
     return new Promise(async (resolve) => {
       const gen = this.typeGen(this.#input);
 

@@ -63,7 +63,8 @@ export default class Stdout extends TerminalLine {
   }
 
   // printf only works here for output
-  render() {
+  render(parentComponent) {
+    super.render(parentComponent);
     const lastOutputArg = this.#output.at(-1); // or check for only function?
 
 

@@ -1,11 +1,13 @@
+import Component from '../../lib/mixins/component.mjs';
+
 import Stdin from './Stdin.mjs';
 import Stdout from './Stdout.mjs';
 
 
-class Terminal {
+class Terminal extends Component() {
   static assets = [
     'https://cdnjs.cloudflare.com/ajax/libs/two.js/0.7.0-beta.3/two.min.js',
-    // './components/Terminal/Terminal.css',
+    './components/Terminal/Terminal.css',
     ...Stdin.assets,
     ...Stdout.assets,
   ];
@@ -25,11 +27,10 @@ class Terminal {
   highlightColor = 'var(--reentry-orange)';
 
   fontSize = '32px'; /* 32px is 100cols at 1080p */
-  lineXPadding = '1ch';
-  lineYPadding = `calc(0.15 * ${this.fontSize})`;
+  lineXPadding = Stdin.horizontalPadding;
+  lineYPadding = Stdin.verticalPadding;
   offscreenShift = `calc(0.5 * ${this.fontSize})`;
 
-  mask = 'repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px)';
   textGlowDefault = '0px 0px 8px #666666';
   textGlowHighlight = '0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8)';
   glowWhite = `drop-shadow(${this.textGlowDefault})`;
@@ -42,10 +43,16 @@ class Terminal {
 
   get heightCalc() {
     /* extra padding for first/last lines */
+    const terminalLineHeight = `(${this.fontSize} + (2 * ${this.lineYPadding}))`;
+    const containerPadding = `(2 * ${this.lineYPadding})`;
+
     return `calc(
-      ((1 + (${this.rows})) * (2 * ${this.lineYPadding}))
-      + (${this.rows} * ${this.fontSize})
+      ${containerPadding} + (${this.rows} * ${terminalLineHeight})
     )`.replaceAll(/\s{2,}/g, ' ').trim();
+    // return `calc(
+    //   ((1 + (${this.rows})) * (2 * ${this.lineYPadding}))
+    //   + (${this.rows} * ${this.fontSize})
+    // )`.replaceAll(/\s{2,}/g, ' ').trim();
   }
 
   get width() {
@@ -56,7 +63,7 @@ class Terminal {
     return `calc((2 * ${this.lineXPadding}) + (${this.columns} * 1ch))`;
   }
 
-  #sessionLines = [];
+  #buffer = [];
 
 
   get rect() {
@@ -69,6 +76,8 @@ class Terminal {
     rows = 2,
     prompt = true,
   } = {}) {
+    super();
+
     const { vars } = this;
 
     this.columns = columns;
@@ -81,10 +90,8 @@ class Terminal {
 
     // terminals usually start up with an empty line
     if (prompt) {
-      this.addPrompt();
+      this.addChild(new Stdin(this));
     }
-
-    this.startTerminalDrift();
   }
 
 
@@ -103,32 +110,29 @@ class Terminal {
         color: this.color,
         fontWeight: 'bold',
         fontSize: this.fontSize,
-
-        '-webkit-mask-image': this.mask,
-        maskImage: this.mask,
-        '-webkit-mask-size': '200%',
-        maskSize: '200%',
-        // animation: terminal-drift 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0),
       });
 
     return $terminal;
   }
 
   $getTerminalContainer() {
+    const heightCalc = this.heightCalc;
+    const widthCalc = this.widthCalc;
+
     return $('<div>')
       .addClass('Terminal--container')
       .css({
         boxSizing: 'border-box',
         position: 'relative',
 
-        minHeight: this.heightCalc,
-        '--terminal-height': this.heightCalc,
-        height: this.heightCalc,
-        maxHeight: this.heightCalc,
+        minHeight: heightCalc,
+        '--terminal-height': heightCalc,
+        height: heightCalc,
+        maxHeight: heightCalc,
 
-        minWidth: this.widthCalc,
-        width: this.widthCalc,
-        maxWidth: this.widthCalc,
+        minWidth: widthCalc,
+        width: widthCalc,
+        maxWidth: widthCalc,
 
         fontSize: this.fontSize,
         backgroundColor: this.bgColor,
@@ -137,50 +141,9 @@ class Terminal {
       });
   }
 
-  async startTerminalDrift() {
-    this.driftStarted = true;
-    console.log('[Terminal] start drifting');
-    const now = Date.now();
-
-    await new Promise((resolve) => {
-      const interval = setInterval(() => {
-        if (parseInt(this.$el.css('height'), 10)) {
-          console.log('[Terminal] wait time: %o', Date.now() - now);
-          this.driftStarted = false;
-          clearInterval(interval);
-          resolve();
-        }
-      }, 100);
-    })
-
-    const terminalDrift = [
-      {
-        'mask-position': '0 0',
-        '-webkit-mask-position': '0 0',
-      },
-      {
-        'mask-position': `0 ${this.height}`,
-        '-webkit-mask-position': `0 ${this.height}`,
-      },
-    ];
-    const terminalDriftTiming = {
-      duration: 12000,
-      iterations: Infinity,
-      easing: 'cubic-bezier(0.1, -0.6, 0.2, 0)',
-      direction: 'alternate',
-    };
-
-    console.log('[Terminal] animate with height(%o)! %o', this.height, terminalDrift);
-    const animation = this.$terminal[0].animate(terminalDrift, terminalDriftTiming);
-
-    // setInterval(() => {
-    //   console.log('animation.currentTime: %o', animation.currentTime)
-    // }, 500);
-  }
-
   // @returns {Stdin}
   stdin(inputText) {
-    let lastLine = this.#sessionLines.at(-1);
+    let lastLine = this.children.at(-1);
 
     if (!(lastLine instanceof Stdin)) {
       lastLine = this.addPrompt();
@@ -201,24 +164,40 @@ class Terminal {
   // need separate TerminalCommand class?
   // @returns {Promise}
   command(stdin, ...stdouts) {
-    let promise = stdin.render();
+    let promise = stdin.renderText();
 
     stdouts.forEach((stdout) => {
       promise = promise.then(() => {
         this.addTerminalLine(stdout);
-        return stdout.render();
+        return stdout.render(this);
       });
     });
 
     return promise.then(() => this.addPrompt());
   }
 
-  // clear() {
-  //   this.#sessionLines = [];
-  // }
+  command(callback) {
+    return new Promise((resolve) => {
+      // store to buffer?
+      callback(this.stdin, this.stdout);
+
+      // run through buffer
+    });
+    let promise = stdin.renderText();
+
+    stdouts.forEach((stdout) => {
+      promise = promise.then(() => {
+        this.addTerminalLine(stdout);
+        return stdout.render(this);
+      });
+    });
+
+    return promise.then(() => this.addPrompt());
+  }
+
 
   addTerminalLine(line) {
-    this.#sessionLines.push(line);
+    this.children.push(line);
     this.$terminal.append(line.$el);
   }
 
@@ -238,6 +217,11 @@ class Terminal {
     }
     return this.$root.css(this.vars[varName]);
   }
+
+  // render(...args) {
+  //   super.render(...args);
+  //   // debugger;
+  // }
 }
 
 

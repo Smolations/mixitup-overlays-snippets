@@ -1,14 +1,23 @@
+import Component from '../../lib/mixins/component.mjs';
+
+import GridCell from './GridCell.mjs';
+import GridRow from './GridRow.mjs';
+
 // width of 1080p is 100 columns at 32px font-size
 
-export default class Grid {
+export default class Grid extends Component() {
   static assets = [
     // './components/Grid/Grid.css',
   ];
 
-  gridRows;
 
-  constructor(...gridRows) {
-    this.gridRows = gridRows;
+  constructor({ rows, cols }) {
+    super();
+
+    // this.rows = rows;
+    // this.cols = cols;
+
+    // this.gridRows = gridRows;
     this.$el = $('<main>')
       .addClass('Grid')
       .css({
@@ -22,14 +31,31 @@ export default class Grid {
         justifyContent: 'stretch',
       });
 
-    this.buildGrid(gridRows);
+    this.buildGridChildren(rows, cols);
   }
 
-  buildGrid(gridRows) {
-    gridRows.forEach((gridRow, ndx) => {
-      gridRow.$el.css({ height: `${(1 / gridRows.length) * 100}%` });
-      this.$el.append(gridRow.$el);
-      this[ndx] = gridRow;
-    });
+
+  buildGridChildren(numRows, numCols) {
+    for (let i = 0; i < numRows; i++) {
+      const gridRow = new GridRow({
+        height: `${(1 / numRows) * 100}%`,
+      });
+
+      for (let j = 0; j < numCols; j++) {
+        gridRow.addChild(new GridCell({
+          top: (i === 0),
+          bottom: (i === numRows - 1),
+          left: (j === 0),
+          right: (j === numCols - 1),
+          width: `${(1 / numCols) * 100}%`,
+        }));
+      }
+
+      this.addChild(gridRow);
+    }
+  }
+
+  cell(row, col) {
+    return this.children[row].children[col];
   }
 }

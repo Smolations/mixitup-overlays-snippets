@@ -1,13 +1,16 @@
-export default class GridRow {
+import Component from '../../lib/mixins/component.mjs';
+
+export default class GridRow extends Component() {
   static assets = [
     // './components/Grid/GridRow.css',
   ];
 
-  gridCells;
 
+  constructor(props) {
+    super();
 
-  constructor(...gridCells) {
-    this.gridCells = gridCells;
+    const { height } = props;
+
     this.$el = $('<section>')
       .addClass('GridRow')
       .css({
@@ -16,18 +19,8 @@ export default class GridRow {
         position: 'relative',
         display: 'flex',
         justifyContent: 'stretch',
-        'outline': '1px dotted red', // debugging
+        height,
+        outline: '1px dotted red', // debugging
       });
-
-    this.buildRow(gridCells);
-  }
-
-
-  buildRow(gridCells) {
-    gridCells.forEach((gridCell, ndx) => {
-      gridCell.$el.css({ width: `${(1 / gridCells.length) * 100}%` });
-      this.$el.append(gridCell.$el);
-      this[ndx] = gridCell;
-    });
   }
 }

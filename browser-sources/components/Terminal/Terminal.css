@@ -34,6 +34,7 @@
   --text-glow-highlight: 0px 0px 8px rgba(var(--reentry-orange-rgb), 0.8);
   --glow-white: drop-shadow(var(--text-glow-default));
   --glow-highlight: drop-shadow(var(--text-glow-highlight)); */
+  --msk: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
 }
 
 /* ensure :root relative font-size lengths are correct */
@@ -72,16 +73,16 @@ body {
   background-color: var(--terminal-bg-color);
   color: var(--terminal-color);
   font-weight: bold;
-  font-size: var(--terminal-font-size);
+  font-size: var(--terminal-font-size); */
 
   -webkit-mask-image: var(--msk);
   mask-image: var(--msk);
   -webkit-mask-size: 200%;
-  mask-size: 200%; */
+  mask-size: 200%;
   animation: terminal-drift 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0);
 }
 
-
+/* was never able to get this working in the web animations api.. =[ */
 @keyframes terminal-drift {
   0% {
     -webkit-mask-position: 0 0;

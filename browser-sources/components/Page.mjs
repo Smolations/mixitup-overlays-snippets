@@ -1,6 +1,6 @@
+import Component from '../lib/mixins/component.mjs';
+
 import Grid from './Grid/Grid.mjs';
-import GridRow from './Grid/GridRow.mjs';
-import GridCell from './Grid/GridCell.mjs';
 
 import Css from './Css.mjs';
 import Javascript from './Javascript.mjs';
@@ -10,7 +10,7 @@ import Javascript from './Javascript.mjs';
 // the necessary libs/styles they need so that the html
 // template only needs to load a single, page-specific
 // js that does all the instantiation.
-export default class Page {
+export default class Page extends Component() {
   #jqSrc = 'https://code.jquery.com/jquery-3.6.0.min.js';
 
   #defaultCss = [
@@ -24,13 +24,13 @@ export default class Page {
 
 
   constructor({ grid, assets = [] } = {}) {
+    super();
+
     const allAssets = [...assets];
 
     if (grid) {
       allAssets.push(
         ...Grid.assets,
-        ...GridRow.assets,
-        ...GridCell.assets,
       );
     }
 
@@ -42,8 +42,19 @@ export default class Page {
       .then(() => this.#loadJs(this.#defaultJs))
       .then(() => Promise.all([this.#loadCss(css), this.#loadJs(js)]))
       .then(() => {
+        // only when jquery is loaded..maybe a better place for this?
+        this.$el = $('<div>')
+          .addClass('Page')
+          .css({
+            width: '100%',
+            height: '100%',
+            position: 'relative',
+          });
+
         if (grid) {
-          return this.addGrid(...grid);
+          const gridComponent = new Grid(grid);
+          this.addChild(gridComponent);
+          return gridComponent;
         }
       })
       .catch((err) => {
@@ -60,33 +71,6 @@ export default class Page {
     });
   }
 
-
-  /**
-   * allowing the Page to build the grid means there won't be an import chain
-   * and grids can be nested.
-   */
-  addGrid(rows, cols) {
-    const gridRows = [];
-
-    for (let i = 0; i < rows; i++) {
-      const gridCells = [];
-
-      for (let j = 0; j < cols; j++) {
-        gridCells.push(new GridCell());
-      }
-
-      gridRows.push(new GridRow(...gridCells))
-    }
-
-    this.grid = new Grid(...gridRows);
-    this.grid.$el.appendTo(document.body);
-
-    return this.grid;
-  }
-
-
-  // letting Page be the master delegator?
-  addPanel() {}
 
 
   #loadCss(hrefs = []) {

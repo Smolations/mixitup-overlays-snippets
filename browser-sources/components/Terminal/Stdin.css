@@ -7,7 +7,7 @@
 /* trailing cursor */
 .Stdin:last-child::after {
   content: "\2593";
-  padding-left: 0.1em; /* needs var? */
+  padding-left: 0.1ch;
   animation: 0.6s cursor-blink infinite;
 }
 
