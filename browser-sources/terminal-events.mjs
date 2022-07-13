@@ -118,6 +118,7 @@ page.ready(async (grid) => {
   const cell = grid.cell(0, 1);
   const panel = cell.addPanel('terminalEvent', {
     center: true,
+    frameOnly: true,
   });
   let terminal;
   let session;

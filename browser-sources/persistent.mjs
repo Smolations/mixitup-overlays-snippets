@@ -1,8 +1,10 @@
+import Monogram from './components/Monogram.mjs';
 import Page from './components/Page.mjs';
 import Terminal from './components/Terminal/Terminal.mjs';
 
 
 const page = new Page({
+  grid: { rows: 2, cols: 2 },
   assets: [
     ...Terminal.assets,
     './persistent.css',
@@ -10,23 +12,18 @@ const page = new Page({
 });
 
 
-function renderMonogram() {
-  const monogramTerminal = new Terminal({ prompt: false });
+page.ready(async (grid) => {
+  const cell = grid.cell(0, 0);
+  const panel = cell.addPanel('monogram', {
+    preferredAnimationAxis: 'x',
+    content: new Monogram({ variant: '', padding: '1ch' }),
+    // height: '300px',
+    // width: '150%',
+    // center: true,
+    logo: false,
+    frameOnly: true,
+  });
 
-  monogramTerminal.$terminalContainer.addClass('monogram-container');
-  monogramTerminal.$terminal.append(
-    $('<img>')
-      .addClass('monogram')
-      .attr('src', './img/monogram_orange.png'),
-  );
-}
-
-
-/**
- * ENTRY
- *
- * Determine subject for processing.
- */
-page.ready(async () => {
-  renderMonogram();
+  // delay so i can click page before sounds are heard
+  await panel.show();
 });

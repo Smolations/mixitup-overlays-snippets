@@ -25,6 +25,7 @@ page.ready(async (grid) => {
   const panel = cell.addPanel('latest', {
     content: terminal,
     center: true,
+    frameOnly: true,
   });
   window.terminal = terminal;
 

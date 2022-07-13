@@ -1,9 +1,9 @@
 :root {
-  --terminal-height: 150px;
-  --terminal-width: calc(135px - var(--terminal-border-width));
+  /* --terminal-height: 150px;
+  --terminal-width: calc(135px - var(--terminal-border-width)); */
 
   /* follow 3 edges */
-  --border-clip: polygon(0% 0%, 76% 0%, 98% 26%, 91% 67%, 51% 100%, 0% 100%);
+  /* --border-clip: polygon(0% 0%, 76% 0%, 98% 26%, 91% 67%, 51% 100%, 0% 100%); */
 
   /* follow 2 edges */
   /* --border-clip: polygon(0% 0%, 98% 0%, 98% 26%, 90% 67%, 50% 100%, 0% 100%); */
@@ -16,7 +16,7 @@
 }
 
 
-.fake-border-container {
+/* .fake-border-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -25,14 +25,14 @@
 
   background-color: var(--battletech-grey);
   clip-path: var(--border-clip);
-}
+} */
 
 /* (terminal-container) */
 .monogram-container {
-  position: absolute;
+  /* position: absolute;
   top: 0;
   left: 0;
-  border-left: none;
+  border-left: none; */
   /* border-bottom-right-radius: 90px; */
 
   /* border: none; */
@@ -47,18 +47,18 @@
   --aug-border-bg: pink; */
 }
 
-.monogram-container > .Terminal {
+/* .monogram-container > .Terminal {
   height: 100%;
-}
+} */
 
-.monogram-container img {
+/* .monogram-container img {
   position: relative;
   top: 3%;
   left: 8%;
   height: 95%;
 
   filter: var(--glow-highlight) var(--glow-highlight) brightness(1.5);
-}
+} */
 
 /* .latest-container {
   position: absolute;
