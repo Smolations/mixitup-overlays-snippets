@@ -1,14 +1,21 @@
 import Component from '../../lib/mixins/component.mjs';
+import Logable from '../../lib/mixins/logable.mjs';
+import Randable from '../../lib/mixins/randable.mjs';
 
+import SoundGroup from '../SoundGroup.mjs';
 import Sparks from '../Sparks.mjs';
 
-export default class Panel extends Component() {
+
+export default class Panel extends Logable(Randable(Component())) {
   static assets = [
     // './components/Panel/Panel.css',
   ];
 
   specs;
   sparksOpen = [];
+  sparksClose = [];
+
+  sounds = {};
 
   // hiding any lingering shadow from hidden content
   offscreenShift = '10px';
@@ -43,6 +50,19 @@ export default class Panel extends Component() {
 
   crossAxisTransforms = [];
 
+  animationEnterTiming = {
+    duration: 3000,
+    easing: 'ease-in',
+    fill: 'forwards',
+  };
+
+  animationExitTiming = {
+    duration: 2000,
+    easing: 'ease-in',
+    fill: 'forwards',
+  };
+
+
   constructor(props = {}) {
     super();
 
@@ -61,7 +81,10 @@ export default class Panel extends Component() {
     this.preferredAnimationAxis = preferredAnimationAxis;
 
     this.$el = this.$getPanel();
+
+    this.readyPromise = this.loadSounds();
   }
+
 
   $getPanel() {
     const {
@@ -77,8 +100,6 @@ export default class Panel extends Component() {
         ...this.cssVars,
         ...this.panelCommonCss,
         position: 'absolute', // must have in order for content to fill container
-        // top: 0,
-        // left: 0,
         height,
         width,
         padding: `var(--y-offset) var(--x-offset)`,
@@ -189,48 +210,186 @@ export default class Panel extends Component() {
     return $wrapper.append($frameTop, $frameBottom);
   }
 
-  getSparks() {
-    const panelLeft = this.rect.left;
-    const panelWidth = this.rect.width;
+  getCommonSparkOpts() {
+    const { from } = this.getSpec();
+    const { right, left, top, bottom } = this.rect;
+    const offscreenOffset = 5;
+    // this.log('rect: %o', this.rect);
 
-    const sparksMiddle = new Sparks({
-      id: 'middleSparks',
-      top: -5,
-      left: [panelLeft + 100, panelLeft + 300],
-      speed: 80,
-      duration: 4000, // opening animation is 3s
-      scaleFactor: [0.2, 0.4],
-      sparkDuration: [300, 600],
-      frequency: 3,
+    const common = {
+      duration: this.animationEnterTiming.duration + 1000,
       rotationVariation: Math.PI * (1 / 8),
-    });
+    };
 
-    const sparksLeft = new Sparks({
-      id: 'sparksLeft',
-      top: -5,
-      left: panelLeft,
-      speed: 60,
-      duration: 4000, // opening animation is 3s
-      scaleFactor: [0.5, 0.7],
-      sparkDuration: [100, 800],
-      frequency: 4,
-      rotationVariation: Math.PI * (1 / 8),
-    });
+    switch (from) {
+      case 'top':
+        common.top = -offscreenOffset;
+        common.left = [left, right];
+        common.rotation = 0;
+        break;
+      case 'bottom':
+        common.top = top + offscreenOffset;
+        common.left = [left, right];
+        common.rotation = Math.PI;
+        break;
+      case 'right':
+        common.top = [top, bottom];
+        common.left = left + offscreenOffset;
+        common.rotation = 0.5 * Math.PI;
+        break;
+      case 'left':
+        common.top = [top, bottom];
+        common.left = -offscreenOffset;
+        common.rotation = -0.5 * Math.PI;
+        break;
+    }
 
-    const sparksRight = new Sparks({
-      id: 'sparksRight',
-      top: -5,
-      left: panelLeft + panelWidth,
-      speed: 30,
-      duration: 4000, // opening animation is 3s
-      scaleFactor: [0.5, 0.7],
-      sparkDuration: [100, 750],
-      frequency: 2,
-      rotationVariation: Math.PI * (1 / 8),
-    });
-
-    this.sparksOpen.push(sparksLeft, sparksMiddle, sparksRight);
+    return common;
   }
+
+  getOpeningSparks() {
+    const common = this.getCommonSparkOpts();
+    common.duration = this.animationEnterTiming.duration + 1000;
+
+    return [
+      new Sparks({
+        ...common,
+        id: 'sparksLeft',
+        speed: 60,
+        scaleFactor: [0.5, 0.7],
+        sparkDuration: [100, 800],
+        frequency: 4,
+      }),
+      new Sparks({
+        ...common,
+        id: 'middleSparks',
+        speed: 80,
+        scaleFactor: [0.2, 0.4],
+        sparkDuration: [300, 600],
+        frequency: 3,
+      }),
+      new Sparks({
+        ...common,
+        id: 'sparksRight',
+        speed: 30,
+        scaleFactor: [0.5, 0.7],
+        sparkDuration: [100, 750],
+        frequency: 2,
+      }),
+    ];
+  }
+
+  getClosingSparks() {
+    const common = this.getCommonSparkOpts();
+    common.duration = this.animationExitTiming.duration + 1000;
+
+    return [
+      new Sparks({
+        ...common,
+        id: 'smallerSparks',
+        speed: 80,
+        scaleFactor: [0.2, 0.4],
+        sparkDuration: [300, 600],
+        frequency: 3,
+      }),
+      new Sparks({
+        ...common,
+        id: 'biggerSparks',
+        speed: 30,
+        scaleFactor: [0.5, 0.7],
+        sparkDuration: [100, 750],
+        frequency: 2,
+      }),
+    ];
+  }
+
+  createSparks() {
+    const openingSparks = this.getOpeningSparks();
+    const closingSparks = this.getClosingSparks();
+
+    this.sparksOpen.push(...openingSparks);
+    this.sparksClose.push(...closingSparks);
+  }
+
+  // @returns {Function} so that sounds can be kicked off along with animations
+  syncSoundsWithAnimation(keyframes, timing) {
+    return () => {
+      this.syncThuds(keyframes, timing)();
+      this.syncAmbient(keyframes, timing)();
+      this.syncRandom(keyframes, timing)();
+    };
+  }
+
+  syncThuds(keyframes, timing) {
+    const { duration } = timing;
+
+    return () => {
+      // expect animations (except first/last) will have an
+      // offset for realism (but be ready for otherwise)
+      keyframes.forEach((keyframe, ndx) => {
+        if (ndx === 0) {
+          // animation start
+          this.sounds.thud.random().play();
+        } else if (ndx === keyframes.length - 1) {
+          // animation end
+          setTimeout(() => this.sounds.thud.random().play(), duration);
+        } else {
+          // interstitial animations
+          const { offset } = keyframe;
+          setTimeout(() => this.sounds.thud.random().play(), duration * offset);
+        }
+      });
+    };
+  }
+
+  syncAmbient(keyframes, timing) {
+    const { duration } = timing;
+
+    return () => {
+      const sound = this.sounds.ambient.random();
+
+      if (sound.duration < duration) {
+        const rate = (duration / sound.duration);
+        sound.rate(rate);
+      }
+
+      sound.play();
+
+      setTimeout(() => sound.reset(), duration);
+    };
+  }
+
+  syncRandom(keyframes, timing) {
+    const { duration } = timing;
+    const soundPool = [
+      'clattering',
+      'grind',
+      'grind',
+      'groan',
+      'groan',
+      'groan-screech',
+      'screech',
+      'screech',
+    ].map((groupName) => this.sounds[groupName].random())
+      // .filter((sound) => (sound.duration <= duration));
+      .filter((sound) => {
+        this.log('(playable? %o) sound.duration(%o) <= duration', sound.playable, sound.duration, duration);
+        return (sound.duration <= duration)
+      });
+
+    this.log('this.sounds: %o', this.sounds);
+    this.log('soundPool: %o', soundPool);
+    const sound = soundPool[this.randInt(soundPool.length - 1)];
+    this.log('sound: %o', sound);
+    const durationDiff = duration - sound.duration;
+    const randomStart = this.randFloat(durationDiff);
+
+    return () => {
+      setTimeout(() => sound.play(), randomStart);
+      setTimeout(() => sound.reset(), duration);
+    };
+  }
+  // etc..
 
 
   positionOffscreen() {
@@ -274,23 +433,38 @@ export default class Panel extends Component() {
   render(...args) {
     super.render(...args);
 
+    // we'll add positioning after elements gain some layout
+    // when added to the DOM.
     this.positionCrossAxis();
     this.positionOffscreen();
-    this.getSparks();
+    this.createSparks();
 
     // ensuring this is the last appended element
-    this.$el.append(this.$getPanelFrame())
-    console.log('[Panel render()] new height: %o', this.$el.css('height'))
+    this.$el.append(this.$getPanelFrame());
   }
 
 
-  // requires content.animationAxis
-  // or maybe the cell can store metadata via original idea
-  // of storing content dictionary objects instead of
-  // just the content object itself..
+  /**
+   * In order for animations/effects to occur for a panel, it must have some
+   * idea about its position on the grid (i.e. information about its containing
+   * GridCell). Using the grid cell's location data, some helpful information
+   * can be generated for use in other methods which require this positioning
+   * data.
+   *
+   * @returns {Object} spec An object with information about the panel's
+   *                        containing cell, containing the following properties:
+   *                          {String} spec.from        One of 'top', 'left', 'bottom', 'right'.
+   *                          {String} spec.mainAxis    Either 'x' or 'y'.
+   *                          {String} spec.mainAxisDimName Either 'height' or 'width'.
+   *                          {Number} spec.transformScalar Either -1 or 1.
+   *                          {Function} spec.translate A function that provides a value for
+   *                                                    the css `transform` property given a
+   *                                                    main axis translation length.
+   */
   getSpec() {
     const { preferredAnimationAxis } = this;
     this.specs ||= this.buildSpecs();
+    // this.log(this.specs)
 
     const { x: xSpec, y: ySpec } = this.specs;
     const isCornerCell = (!!xSpec && !!ySpec);
@@ -321,44 +495,76 @@ export default class Panel extends Component() {
           from,
           mainAxis,
           mainAxisDimName: (dim === 'Y') ? 'height' : 'width',
+          transformScalar: ['right', 'bottom'].includes(from) ? -1 : 1,
           translate: (val) => {
             const translations = [0, val];
             if (center) (translations[0] = '-50%');
             if (mainAxis === 'x') translations.reverse();
-            // const currentTransform = this.$el.css('transform');
+
             return `translate(${translations.join(', ')})`;
-            return `translateX(-50%) translate${dim}(${val})`;
-            return `${currentTransform === 'none' ? '' : currentTransform} translate${dim}(${val})`;
           },
         },
       };
     }, {});
   }
 
+  // @returns {Promise}
+  loadSounds() {
+    const basePath = './lib/sounds/metal';
+    const groupPromises = [];
+
+    [
+      ['ambient', 11],
+      ['clattering', 3],
+      ['grind', 10],
+      ['groan', 15],
+      ['groan-screech', 3],
+      ['screech', 9],
+      ['thud', 14],
+    ].forEach((group) => {
+      const [name, numFiles] = group;
+
+      this.sounds[name] = new SoundGroup(name, `${basePath}/${name}`, numFiles);
+
+      groupPromises.push(this.sounds[name].readyPromise);
+    });
+
+    return Promise.all(groupPromises);
+  }
+
   // expects an object with an $el
   // @returns {Promise}
-  show({ delay = 0 } = {}) {
-    console.log('just before animateIn, width: %o', this.$el.css('width'))
+  async show({ delay = 0 } = {}) {
+    // console.log('just before animateIn, width: %o', this.$el.css('width'))
+    await this.readyPromise;
+
     return new Promise((resolve) => {
       setTimeout(() => {
-        const { mainAxisDimName, translate } = this.getSpec();
+        const {
+          mainAxisDimName,
+          transformScalar,
+          translate,
+        } = this.getSpec();
         const length = this.$el.css(mainAxisDimName);
-        console.log('translate(0): %o', translate(0))
+
+        // console.log('translate(0): %o', translate(0))
         const contentEnter = [
           { transform: translate(0) },
-          { offset: 0.15, transform: translate(`calc(0.7 * ${length})`) },
-          { offset: 0.20, transform: translate(`calc(0.65 * ${length})`) },
-          { transform: translate(`calc(${length} + ${this.offscreenShift})`) },
+          { offset: 0.15, transform: translate(`calc(0.7 * ${length} * ${transformScalar})`) },
+          { offset: 0.20, transform: translate(`calc(0.65 * ${length} * ${transformScalar})`) },
+          { transform: translate(`calc(${transformScalar} * (${length} + ${this.offscreenShift}))`) },
         ];
-        const contentEnterTiming = {
-          duration: 3000,
-          easing: 'ease-in',
-          fill: 'forwards',
-        };
+
+        const playSounds = this.syncSoundsWithAnimation(contentEnter, this.animationEnterTiming);
 
         this.sparksOpen.forEach((spark) => spark.play());
+        playSounds();
 
-        const animation = this.$el[0].animate(contentEnter, contentEnterTiming);
+        const animation = this.$el[0].animate(
+          contentEnter,
+          this.animationEnterTiming,
+        );
+
         animation.onfinish = resolve;
       }, delay);
     });
@@ -367,24 +573,32 @@ export default class Panel extends Component() {
   // expects an object with an $el
   // @returns {Promise}
   hide({ delay = 0 } = {}) {
-    const { mainAxisDimName, translate } = this.getSpec();
-    const length = this.$el.css(mainAxisDimName);
-
-    // cell will need to know orientation for correct entry/exit animations
-    const contentExit = [
-      { transform: translate(`calc(${length} + ${this.offscreenShift})`) },
-      { offset: 0.40, transform: translate(`calc(0.3 * ${length})`) },
-      { transform: translate(0) },
-    ];
-    const contentExitTiming = {
-      duration: 2000,
-      easing: 'ease-in',
-      fill: 'forwards',
-    };
-
     return new Promise((resolve) => {
       setTimeout(() => {
-        const animation = this.$el[0].animate(contentExit, contentExitTiming);
+        const {
+          mainAxisDimName,
+          transformScalar,
+          translate,
+        } = this.getSpec();
+        const length = this.$el.css(mainAxisDimName);
+
+        // bottom may need more offset since drop shadow offsets upward
+        const contentExit = [
+          { transform: translate(`calc(${transformScalar} * (${length} + ${this.offscreenShift}))`) },
+          { offset: 0.40, transform: translate(`calc(0.3 * ${length} * ${transformScalar})`) },
+          { transform: translate(0) },
+        ];
+
+        const playSounds = this.syncSoundsWithAnimation(contentExit, this.animationExitTiming);
+
+        this.sparksClose.forEach((spark) => spark.play());
+        playSounds();
+
+        const animation = this.$el[0].animate(
+          contentExit,
+          this.animationExitTiming,
+        );
+
         animation.onfinish = resolve;
       }, delay);
     });

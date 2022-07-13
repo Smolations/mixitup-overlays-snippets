@@ -67,7 +67,15 @@ export default class Page extends Component() {
 
   ready(callback) {
     this.#promise.then((grid) => {
-      $(document).ready(() => callback(grid));
+      $(document).ready(() => {
+        // render the page/grid up front so that grid
+        // cells are positioned/size for any incoming
+        // content.
+        this.render($('body'));
+
+        // provide grid to page script
+        callback(grid);
+      });
     });
   }
 

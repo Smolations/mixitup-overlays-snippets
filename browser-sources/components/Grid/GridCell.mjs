@@ -90,6 +90,8 @@ export default class GridCell extends Component() {
       // spec,
     };
 
+    if (this.mounted) this.render(this.parent);
+
     return panel;
   }
 }

@@ -1,7 +1,10 @@
+import Randable from '../lib/mixins/randable.mjs';
+
 // original codepen:
 // https://codepen.io/jonobr1/pen/yRpoPQ?editors=0010
 
-export default class Sparks {
+
+export default class Sparks extends Randable() {
   get COLORS() {
     return [
       'rgb(252, 236, 5)', // bumblebee
@@ -41,6 +44,8 @@ export default class Sparks {
    * @property {Number} [amount=60] the number of total spark curves in a single rendering loop
    */
   constructor(opts) {
+    super();
+
     this.opts = {
       id: 'needsId',
       amount: 60,
@@ -57,7 +62,7 @@ export default class Sparks {
       autostart: false,
       ...opts,
     };
-    console.log('Sparks opts: %o', this.opts);
+    // console.log('Sparks opts: %o', this.opts);
 
     this.two = (new Two({
       type: Two.Types.canvas,
@@ -87,7 +92,7 @@ export default class Sparks {
     max = this.opts.duration,
     delay = this.opts.startDelay,
   ) {
-    return Math.floor(Math.random() * (max - delay)) + delay;
+    return this.randInt(delay, max);
   }
 
   /**
@@ -98,21 +103,12 @@ export default class Sparks {
     radians = this.opts.rotation,
     variation = this.opts.rotationVariation,
   ) {
-    const sign = (Math.random() < 0.5) ? -1 : 1;
-    const variationValue = (sign * Math.random() * variation);
+    // const sign = (Math.random() < 0.5) ? -1 : 1;
+    // const variationValue = (sign * Math.random() * variation);
+    const sign = (this.randFloat(1) < 0.5) ? -1 : 1;
+    const variationValue = (sign * this.randFloat(variation));
 
     return (variationValue + radians);
-  }
-
-  /**
-   * @param {Number} min
-   * @param {Number} max
-   */
-  getRandomNumber(min, max) {
-    const diff = (max - min);
-    const randomDiff = Math.floor(Math.random() * diff);
-
-    return (min + randomDiff);
   }
 
   // alternative to a *Variation opt for vars
@@ -127,7 +123,7 @@ export default class Sparks {
 
     if (Array.isArray(value)) {
       // type checking?
-      value = this.getRandomNumber(...value);
+      value = this.randInt(...value);
     }
     // console.log('optValueOrRandom(%o) => %o', optName, value);
     return value;
@@ -141,7 +137,7 @@ export default class Sparks {
       'rgba(255, 255, 255, 0.08)',
       'rgba(255, 255, 255, 0)',
     ].join(', ');
-    console.log({ scaledWidth })
+    // console.log({ scaledWidth })
 
     return $('<div>')
       .addClass('Sparks--glare')
@@ -295,7 +291,7 @@ export default class Sparks {
     const mod = (maxDurationMs % maxSparkDurationMs);
     // console.debug('leftover(mod): %o', mod);
 
-    const leadIn = this.getRandomNumber(0, mod);
+    const leadIn = this.randInt(mod);
     // console.debug('leadIn: %o', leadIn);
 
     const maxNumSparks = Math.floor((maxDurationMs - leadIn) / maxSparkDurationMs);
@@ -316,7 +312,7 @@ export default class Sparks {
         const lastStartTime = offsets[currentNdx - 1];
         const lastSparkEndTime = lastStartTime + sparkDurations[ndx];
         const remainingSections = (numSparks - currentNdx);
-        const randomNum = this.getRandomNumber(
+        const randomNum = this.randInt(
           lastSparkEndTime,
           lastSparkEndTime + ((maxDurationMs - lastSparkEndTime) / remainingSections) - maxSparkDurationMs,
         );
@@ -423,7 +419,7 @@ export default class Sparks {
       const sparkDuration = sparkDurations[i];
 
       setTimeout(() => {
-        console.debug('[%o] spark on!', Date.now() - now)
+        // console.debug('[%o] spark on!', Date.now() - now)
         this.rotate(rotation);
         this.scale(scaleFactor);
         this.translate(left, top);
@@ -436,7 +432,7 @@ export default class Sparks {
         });
 
         setTimeout(() => {
-          console.debug('[%o] spark off!', Date.now() - now)
+          // console.debug('[%o] spark off!', Date.now() - now)
           this.$canvas.css('opacity', 0);
           this.$glare.css('opacity', 0);
         }, sparkDuration);
