@@ -1,13 +1,4 @@
-.Panel {
-  /* position: absolute; */
-  right: 1ch;
-  left: initial; /* can't set this from here since styles inline */
-}
-
-.Terminal--marquee {
-  position: relative;
-}
-
+/* what to do about this... css vars? */
 code, pre {
   white-space: pre;
 }

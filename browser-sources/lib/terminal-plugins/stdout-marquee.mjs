@@ -1,32 +1,28 @@
 export default function StdOutMarquee({ stdoutArgs, numRenders, speed = 200 }) {
   return (stdout, resolve) => {
     const $output = stdout.$getTerminalLine(...stdoutArgs);
-    const $separator = $('<code>   ...   </code>');
     const numCols = stdout.parent.columns;
-    let renderCount = 1;
+    const colsBetweenRenders = Math.ceil(numCols / 2);
     let leftCount = numCols;
 
     for (let i = 0; i < numRenders; i++) {
-      stdout.$el.append($output.clone());
-      (i !== numRenders - 1) && stdout.$el.append($separator.clone());
+      stdout.$el.append($output.clone().css('marginRight', `${colsBetweenRenders}ch`));
     }
 
     stdout.$el
-      .css('left', `${numCols}ch`)
-      .addClass('Terminal--marquee');
+      .addClass('Terminal--marquee')
+      .css({
+        position: 'relative',
+        left: `${numCols + 1}ch`,
+      });
 
-    const numChars = stdout.$el.text().length;
+    const numChars = ($output.text().length * numRenders) + (colsBetweenRenders * (numRenders - 1));
     const interval = setInterval(() => {
       stdout.$el.css('left', `${--leftCount}ch`);
 
       if (leftCount < -numChars - 1) {
-        if (renderCount++ < numRenders) {
-          leftCount = numCols;
-          stdout.$el.css('left', `${numCols}ch`);
-        } else {
-          clearInterval(interval);
-          resolve();
-        }
+        clearInterval(interval);
+        resolve();
       }
     }, speed);
   };

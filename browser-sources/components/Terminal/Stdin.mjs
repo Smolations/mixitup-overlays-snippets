@@ -1,3 +1,4 @@
+import SoundGroup from '../SoundGroup.mjs';
 import TerminalLine from './TerminalLine.mjs';
 
 // can't eliminate stylesheet since it makes use of pseudo selectors/elements
@@ -7,7 +8,6 @@ export default class Stdin extends TerminalLine {
     './components/Terminal/Stdin.css',
   ];
 
-  #keySounds = [];
   inputText = '';
 
 
@@ -20,10 +20,17 @@ export default class Stdin extends TerminalLine {
         filter: 'var(--glow-white) var(--glow-white) brightness(1.5)',
       });
 
+    this.soundGroup = new SoundGroup(
+      'keypresses',
+      './lib/sounds/keypresses',
+      37,
+      { prefix: 'key' },
+    );
+
     // preload keypress sounds
-    for (let i = 0; i < 37; i++) {
-      this.#keySounds.push(new Audio(`./components/Terminal/keypresses/key${i + 1}.wav`));
-    }
+    // for (let i = 0; i < 37; i++) {
+    //   this.#keySounds.push(new SoundEffect(`./lib/sounds/keypresses/key${i + 1}.wav`));
+    // }
   }
 
   async *typeGen(text) {
@@ -57,10 +64,7 @@ export default class Stdin extends TerminalLine {
       const gen = this.typeGen(this.inputText);
 
       for await (let str of gen) {
-        const keyIndex = Math.floor(Math.random() * this.#keySounds.length);
-
-        this.#keySounds[keyIndex].play();
-
+        this.soundGroup.random().play();
         this.$el.html(str);
       }
 

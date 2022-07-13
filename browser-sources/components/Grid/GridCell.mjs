@@ -34,7 +34,7 @@ export default class GridCell extends Component() {
         flexGrow: 1,
         position: 'relative',
         width,
-        outline: '1px dotted blue',  // debugging
+        // outline: '1px dotted blue',  // debugging
       });
   }
 
@@ -89,6 +89,8 @@ export default class GridCell extends Component() {
       content: panel,
       // spec,
     };
+
+    if (this.mounted) this.render(this.parent);
 
     return panel;
   }

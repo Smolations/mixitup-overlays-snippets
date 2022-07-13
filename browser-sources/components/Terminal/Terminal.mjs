@@ -79,7 +79,9 @@ class Terminal extends Component() {
 
     this.$el.append(this.$terminal);
 
-    // terminals usually start up with an empty line
+    // terminals usually start up with an empty line. using
+    // .addChild instead of .addPrompt since the lifecycle
+    // render() will handle adding the element to the dom.
     if (prompt) {
       this.addChild(new Stdin(this));
     }
@@ -132,6 +134,7 @@ class Terminal extends Component() {
   }
 
 
+  // takes last input or creates and new one and adds to in/out buffer
   // @returns {Stdin}
   stdin(inputText) {
     let lastLine = this.children.at(-1);
@@ -147,7 +150,7 @@ class Terminal extends Component() {
     return lastLine;
   }
 
-  // passthrough for now..
+  // creates new Stdout and adds to in/out buffer
   // @returns {Stdout}
   stdout(...args) {
     const stdout = new Stdout();
@@ -155,7 +158,23 @@ class Terminal extends Component() {
     return stdout;
   }
 
-  // terminal.session((command) => {...})
+  /**
+   * Provides a callback to register any number of commands. that
+   * command() callback takes its own callback, providing both
+   * stdin/stdout functions to register inputs/outputs. Since
+   * buffers are used, there's no need for async/await.
+   *
+   * e.g. terminal.session((command) => {
+   *   command((stdin, stdout) => {
+   *     stdin('some input');
+   *     stdout('some %h output', 'decorated');
+   *   });
+   * });
+   *
+   * @param {Function} callback  Provides a `command` accepting its own callback
+   *                             that accepts stdin/stdout functions.
+   * @returns {Promise}
+   */
   session(callback) {
     return new Promise((resolve) => {
       // calling command((stdin, stdout) => {...})
@@ -169,6 +188,7 @@ class Terminal extends Component() {
     });
   }
 
+  // process all currently registered stdin/stdout
   // @returns {Promise}
   processInOutBuffer() {
     const bufferLength = this.#inOutBuffer.length;
@@ -183,6 +203,8 @@ class Terminal extends Component() {
     return promise;
   }
 
+  // process all currently registered command callbacks
+  // @returns {Promise}
   processCommandBuffer() {
     const bufferLength = this.#commandBuffer.length;
     let promise = Promise.resolve();
@@ -203,15 +225,21 @@ class Terminal extends Component() {
     return promise;
   }
 
-
+  /**
+   * Adds to children and appends to DOM a new TerminalLine
+   * instance as long as it doesn't already exist.
+   *
+   * @param {TerminalLine} line
+   */
   addTerminalLine(line) {
     if (!this.children.includes(line)) {
-      console.log('[Terminal addTerminalLine] adding: %o', line)
+      // console.log('[Terminal addTerminalLine] adding: %o', line)
       this.addChild(line);
       this.append(line);
     }
   }
 
+  // creates a fresh Stdin and adds it to the terminal.
   // @returns {Stdin}
   addPrompt() {
     const stdin = new Stdin();
@@ -221,6 +249,7 @@ class Terminal extends Component() {
     return stdin;
   }
 
+  // needed?
   var(varName) {
     if (!this.vars[varName]) {
       console.error('varName %o not recognized!', varName);

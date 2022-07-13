@@ -20,7 +20,7 @@ export default class GridRow extends Component() {
         display: 'flex',
         justifyContent: 'stretch',
         height,
-        outline: '1px dotted red', // debugging
+        // outline: '1px dotted red', // debugging
       });
   }
 }

@@ -122,54 +122,6 @@ page.ready(async (grid) => {
   let terminal;
   let session;
 
-  // need sparks on top of terminal (maybe eventually ensure Terminal
-  // is always prepended and sparks always appended to body?) so will
-  // use a callback for instantiation/playing. since there is currently
-  // only one opening/closing animation, they can all share the same sparks.
-  function playSparks(terminal, open = true) {
-    const {
-      left: terminalLeft,
-      width: terminalWidth,
-    } = terminal.rect;
-
-    const commonOpts = {
-      autostart: true,
-      top: -5,
-      duration: 4000, // opening animation is 3s
-      rotationVariation: Math.PI * (1 / 8),
-    };
-
-    new Sparks({
-      ...commonOpts,
-      id: 'middleSparks',
-      left: [terminalLeft + 100, terminalLeft + 300],
-      speed: 80,
-      scaleFactor: [0.2, 0.4],
-      sparkDuration: [300, 600],
-      frequency: 3,
-    });
-
-    new Sparks({
-      ...commonOpts,
-      id: 'sparksLeft',
-      left: terminalLeft,
-      speed: 60,
-      scaleFactor: [0.5, 0.7],
-      sparkDuration: [100, 800],
-      frequency: 4,
-    });
-
-    new Sparks({
-      ...commonOpts,
-      id: 'sparksRight',
-      left: terminalLeft + terminalWidth,
-      speed: 30,
-      scaleFactor: [0.5, 0.7],
-      sparkDuration: [100, 750],
-      frequency: 2,
-    });
-  }
-
 
   switch (queryParams.get('subject')) {
     case 'drive':
@@ -193,10 +145,9 @@ page.ready(async (grid) => {
       break;
   }
 
+  // this flow is not ideal..
   panel.addChild(terminal);
-  render();
-
-  playSparks(terminal);
+  panel.render(panel.parent);
 
   await panel.show();
   await terminal.session(session);

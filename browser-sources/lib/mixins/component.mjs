@@ -24,6 +24,7 @@ const Component = (SuperClass = class {}) =>
   class extends SuperClass {
     $el;
     children = [];
+    mounted = false;
 
     /**
      *  Returns the jquery element for the component.
@@ -83,11 +84,12 @@ const Component = (SuperClass = class {}) =>
 
 
     /**
-     *  Renders the component into the DOM.
+     * Renders the component into the DOM.
      *
-     * // should there be a display:none characteristic to this? or should
-     * this method just append to the parent?
-     *   - start with latter, maybe do former?
+     * ideally this would be great, but not all grid cells have
+     * rendered in the normal render flow so things like
+     * this.rect won't be accurate at this point. probably ideal to render
+     * the Page as early as possible, then add panels later..
      *
      * @param {Component} parentComponent The parent into which this component should render.
      * @param {Boolean} [prepend=false] Whether the element should be prepended or
@@ -102,20 +104,26 @@ const Component = (SuperClass = class {}) =>
         throw new Error('Component render() must be passed a parent!');
       }
 
-      // now children can access the parent if necessary. should be
-      // careful not to create any specific deps on parents though..
-      if (parentIsJquery) {
-        this.parent = { $el: parentComponent };
-        parentComponent[op](this.$el);
-      } else {
-        this.parent = parentComponent;
-        parentComponent[op](this);
+      // this accounts for late child adds, but not child removals, but
+      // that might be fine for most purposes..
+      if (!this.mounted) {
+        // now children can access the parent if necessary. should be
+        // careful not to create any specific deps on parents though..
+        if (parentIsJquery) {
+          this.parent = { $el: parentComponent };
+          parentComponent[op](this.$el);
+        } else {
+          this.parent = parentComponent;
+          parentComponent[op](this);
+        }
       }
 
       // the order of these is likely going to have an impact down the line..
       // for example, what do re-renders look like?
       // console.log('%oing into %o: %o', op, parentComponent.$el, this.$el)
       this.children.forEach((child) => child.render(this));
+
+      this.mounted = true;
     }
   };
 
