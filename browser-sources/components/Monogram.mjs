@@ -7,7 +7,7 @@ export default class Monogram extends Component() {
   constructor(props = {}) {
     super();
 
-    const { variant = 'none' } = props;
+    const { variant = 'none', padding = 0 } = props;
 
     this.filePath = this.#getFilePath(variant);
 
@@ -17,7 +17,7 @@ export default class Monogram extends Component() {
         src: this.filePath,
       })
       .css({
-        // src: this.filePath,
+        padding,
       });
   }
 

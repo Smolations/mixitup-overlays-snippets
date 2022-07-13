@@ -13,7 +13,8 @@ page.ready(async (grid) => {
   // $('body').css('background', 'grey');
 
   const tests = [
-    [0, 1], // top
+    [0, 0],
+    // [0, 1], // top
     // [1, 0], // left
     // [2, 1], // bottom
     // [1, 2], // right
@@ -27,11 +28,12 @@ page.ready(async (grid) => {
     // .addPanel triggers a "re-render"
     const panel = cell.addPanel(`[${coords.join(',')}]`, {
       // preferredAnimationAxis: 'x',
-      content: new Monogram({ variant: '' }),
+      content: new Monogram({ variant: '', padding: '1ch' }),
       // height: '300px',
       // width: '150%',
       // center: true,
       logo: false,
+      frameOnly: true,
     });
     window.panel = panel;
 

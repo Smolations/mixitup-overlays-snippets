@@ -62,6 +62,7 @@ export default class Panel extends Logable(Randable(Component())) {
       center = false,
       preferredAnimationAxis = 'y',
       logo = true,
+      frameOnly = false,
     } = props;
 
     this.height = height;
@@ -70,6 +71,7 @@ export default class Panel extends Logable(Randable(Component())) {
     this.gridLocation = gridLocation;
     this.preferredAnimationAxis = preferredAnimationAxis;
     this.logo = logo;
+    this.frameOnly = frameOnly;
 
     if (!logo) {
       this.logoWidth = 0;
@@ -123,6 +125,7 @@ export default class Panel extends Logable(Randable(Component())) {
         borderRadius: 'var(--border-radius)',
         color: 'white',
         transform: center ? 'translate(-50%, 0)' : 'translate(0, 0)',
+        ...(this.frameOnly && { background: 'none' })
 
         // testing
         // background: 'white',
