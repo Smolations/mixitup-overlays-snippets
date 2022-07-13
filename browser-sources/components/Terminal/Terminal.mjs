@@ -6,7 +6,6 @@ import Stdout from './Stdout.mjs';
 
 class Terminal extends Component() {
   static assets = [
-    'https://cdnjs.cloudflare.com/ajax/libs/two.js/0.7.0-beta.3/two.min.js',
     './components/Terminal/Terminal.css',
     ...Stdin.assets,
     ...Stdout.assets,

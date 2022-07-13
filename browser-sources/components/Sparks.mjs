@@ -5,6 +5,10 @@ import Randable from '../lib/mixins/randable.mjs';
 
 
 export default class Sparks extends Randable() {
+  static assets = [
+    'https://cdnjs.cloudflare.com/ajax/libs/two.js/0.7.0-beta.3/two.min.js',
+  ];
+
   get COLORS() {
     return [
       'rgb(252, 236, 5)', // bumblebee

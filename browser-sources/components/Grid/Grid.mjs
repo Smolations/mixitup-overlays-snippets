@@ -7,6 +7,8 @@ import GridRow from './GridRow.mjs';
 
 export default class Grid extends Component() {
   static assets = [
+    ...GridRow.assets,
+    ...GridCell.assets,
     // './components/Grid/Grid.css',
   ];
 

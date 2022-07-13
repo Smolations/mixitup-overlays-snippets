@@ -8,6 +8,7 @@ import Sparks from '../Sparks.mjs';
 
 export default class Panel extends Logable(Randable(Component())) {
   static assets = [
+    ...Sparks.assets,
     // './components/Panel/Panel.css',
   ];
 
@@ -27,19 +28,7 @@ export default class Panel extends Logable(Randable(Component())) {
   logoHeight = '21px'; // approx; update if width ever changes
   logoOffset = '10px';
 
-  cssVars = {
-    '--y-offset': this.yFrameWidth,
-    '--x-offset': this.xFrameWidth,
-    '--y-offset-calc': `calc(100% - ${this.yFrameWidth})`,
-    '--x-offset-calc': `calc(100% - ${this.xFrameWidth})`,
-    '--logo-unused-width-half': `calc((100% - ${this.logoWidth}) / 2)`,
-    '--logo-offset-2x': `calc(2 * ${this.logoOffset})`,
-    '--logo-total-height': `calc(${this.logoHeight} + 2 * ${this.logoOffset})`,
-    '--min-width': `calc(2 * ${this.logoOffset} + ${this.logoWidth})`,
-    '--min-height': `calc(2 * ${this.logoOffset} + ${this.logoHeight} + 2 * var(--y-offset))`,
-    '--border-radius': '3px',
-    '--drop-shadow': 'drop-shadow(0 -4px 8px #000)',
-  };
+  cssVars;
 
   panelCommonCss = {
     boxSizing: 'border-box',
@@ -72,6 +61,7 @@ export default class Panel extends Logable(Randable(Component())) {
       gridLocation,
       center = false,
       preferredAnimationAxis = 'y',
+      logo = true,
     } = props;
 
     this.height = height;
@@ -79,12 +69,38 @@ export default class Panel extends Logable(Randable(Component())) {
     this.center = center;
     this.gridLocation = gridLocation;
     this.preferredAnimationAxis = preferredAnimationAxis;
+    this.logo = logo;
+
+    if (!logo) {
+      this.logoWidth = 0;
+      this.logoHeight = 0;
+      this.logoOffset = 0;
+    }
+
+    this.cssVars = this.getCssVars();
 
     this.$el = this.$getPanel();
 
     this.readyPromise = this.loadSounds();
   }
 
+
+  getCssVars() {
+    const _this = this;
+    return {
+      get '--y-offset'() { return _this.yFrameWidth; },
+      get '--x-offset'() { return _this.xFrameWidth; },
+      get '--y-offset-calc'() { return `calc(100% - ${_this.yFrameWidth})`; },
+      get '--x-offset-calc'() { return `calc(100% - ${_this.xFrameWidth})`; },
+      get '--logo-unused-width-half'() { return `calc((100% - ${_this.logoWidth}) / 2)`; },
+      get '--logo-offset-2x'() { return `calc(2 * ${_this.logoOffset})`; },
+      get '--logo-total-height'() { return `calc(${_this.logoHeight} + 2 * ${_this.logoOffset})`; },
+      get '--min-width'() { return `calc(2 * ${_this.logoOffset} + ${_this.logoWidth})`; },
+      get '--min-height'() { return `calc(2 * ${_this.logoOffset} + ${_this.logoHeight} + 2 * var(--y-offset))`; },
+      get '--border-radius'() { return '3px'; },
+      get '--drop-shadow'() { return 'drop-shadow(0 -4px 8px #000)'; },
+    }
+  }
 
   $getPanel() {
     const {
@@ -141,7 +157,7 @@ export default class Panel extends Logable(Randable(Component())) {
   $getFrameBottom() {
     const $logo = this.$getFrameLogo();
 
-    return $('<div>')
+    const $frameBottom = $('<div>')
       .addClass('Panel--frame-bottom')
       .css({
         ...this.panelCommonCss,
@@ -149,7 +165,7 @@ export default class Panel extends Logable(Randable(Component())) {
         left: 0,
         bottom: 0,
         width: '100%',
-        height: 'var(--logo-total-height)',
+        height: this.logo ? 'var(--logo-total-height)' : 'var(--y-offset)',
         borderRadius: '0 0 var(--border-radius) var(--border-radius)',
         clipPath: `polygon(
           0 var(--y-offset-calc),
@@ -162,8 +178,13 @@ export default class Panel extends Logable(Randable(Component())) {
           0 100%,
           0 var(--y-offset-calc)
         )`,
-      })
-      .append($logo);
+      });
+
+    if (this.logo) {
+      $frameBottom.append($logo);
+    }
+
+    return $frameBottom;
   }
 
   // for masking, was only able to get default alpha to work. take black/white
@@ -371,11 +392,7 @@ export default class Panel extends Logable(Randable(Component())) {
       'screech',
       'screech',
     ].map((groupName) => this.sounds[groupName].random())
-      // .filter((sound) => (sound.duration <= duration));
-      .filter((sound) => {
-        this.log('(playable? %o) sound.duration(%o) <= duration', sound.playable, sound.duration, duration);
-        return (sound.duration <= duration)
-      });
+      .filter((sound) => (sound.duration <= duration));
 
     this.log('this.sounds: %o', this.sounds);
     this.log('soundPool: %o', soundPool);

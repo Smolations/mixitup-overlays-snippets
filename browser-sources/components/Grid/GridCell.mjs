@@ -68,16 +68,10 @@ export default class GridCell extends Component() {
 
   addPanel(contentId, {
     content,
-    height,
-    width,
-    center = false,
-    animationAxis: preferredAnimationAxis,
+    ...panelOpts
   }) {
     const panel = new Panel({
-      height,
-      width,
-      center,
-      preferredAnimationAxis,
+      ...panelOpts,
       gridLocation: { ...this.#location },
     });
 
