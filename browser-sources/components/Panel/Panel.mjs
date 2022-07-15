@@ -2,12 +2,14 @@ import Component from '../../lib/mixins/component.mjs';
 import Logable from '../../lib/mixins/logable.mjs';
 import Randable from '../../lib/mixins/randable.mjs';
 
+import DriftMask from '../DriftMask.mjs';
 import SoundGroup from '../SoundGroup.mjs';
 import Sparks from '../Sparks.mjs';
 
 
 export default class Panel extends Logable(Randable(Component())) {
   static assets = [
+    ...DriftMask.assets,
     ...Sparks.assets,
     // './components/Panel/Panel.css',
   ];
@@ -51,6 +53,10 @@ export default class Panel extends Logable(Randable(Component())) {
     fill: 'forwards',
   };
 
+  get $childrenContainer() {
+    return this.driftMask?.$el || this.$el;
+  }
+
 
   constructor(props = {}) {
     super();
@@ -63,6 +69,7 @@ export default class Panel extends Logable(Randable(Component())) {
       preferredAnimationAxis = 'y',
       logo = true,
       frameOnly = false,
+      driftMask = false,
     } = props;
 
     this.height = height;
@@ -83,6 +90,13 @@ export default class Panel extends Logable(Randable(Component())) {
 
     this.$el = this.$getPanel();
 
+    if (driftMask) {
+      this.driftMask = (typeof(driftMask) === 'object')
+        ? new DriftMask(driftMask)
+        : new DriftMask();
+      this.$el.append(this.driftMask.$el);
+    }
+
     this.readyPromise = this.loadSounds();
   }
 
@@ -101,6 +115,7 @@ export default class Panel extends Logable(Randable(Component())) {
       get '--min-height'() { return `calc(2 * ${_this.logoOffset} + ${_this.logoHeight} + 2 * var(--y-offset))`; },
       get '--border-radius'() { return '3px'; },
       get '--drop-shadow'() { return 'drop-shadow(0 -4px 8px #000)'; },
+      get '--rust-mask-image'() { return 'url("./img/mask_rust_alpha_black.png")'; },
     }
   }
 
@@ -205,7 +220,7 @@ export default class Panel extends Logable(Randable(Component())) {
         left: '50%',
         transform: 'translateX(-50%)',
         width: this.logoWidth,
-        '-webkit-mask-image': 'url("./img/mask_rust_alpha_black.png")',
+        '-webkit-mask-image': 'var(--rust-mask-image)',
         '-webkit-mask-size': '100%',
         filter: 'drop-shadow(0px 0px 3px #000) brightness(0.9)',
       });
@@ -278,27 +293,19 @@ export default class Panel extends Logable(Randable(Component())) {
     return [
       new Sparks({
         ...common,
-        id: 'sparksLeft',
-        speed: 60,
+        id: 'bigSparks',
+        speed: 110,
         scaleFactor: [0.5, 0.7],
-        sparkDuration: [100, 800],
+        sparkDuration: [500, 900],
         frequency: 4,
       }),
       new Sparks({
         ...common,
-        id: 'middleSparks',
-        speed: 80,
+        id: 'smallSparks',
+        speed: 130,
         scaleFactor: [0.2, 0.4],
         sparkDuration: [300, 600],
         frequency: 3,
-      }),
-      new Sparks({
-        ...common,
-        id: 'sparksRight',
-        speed: 30,
-        scaleFactor: [0.5, 0.7],
-        sparkDuration: [100, 750],
-        frequency: 2,
       }),
     ];
   }
@@ -311,7 +318,7 @@ export default class Panel extends Logable(Randable(Component())) {
       new Sparks({
         ...common,
         id: 'smallerSparks',
-        speed: 80,
+        speed: 160,
         scaleFactor: [0.2, 0.4],
         sparkDuration: [300, 600],
         frequency: 3,
@@ -319,9 +326,9 @@ export default class Panel extends Logable(Randable(Component())) {
       new Sparks({
         ...common,
         id: 'biggerSparks',
-        speed: 30,
+        speed: 110,
         scaleFactor: [0.5, 0.7],
-        sparkDuration: [100, 750],
+        sparkDuration: [400, 950],
         frequency: 2,
       }),
     ];
@@ -397,10 +404,10 @@ export default class Panel extends Logable(Randable(Component())) {
     ].map((groupName) => this.sounds[groupName].random())
       .filter((sound) => (sound.duration <= duration));
 
-    this.log('this.sounds: %o', this.sounds);
-    this.log('soundPool: %o', soundPool);
+    // this.log('this.sounds: %o', this.sounds);
+    // this.log('soundPool: %o', soundPool);
     const sound = soundPool[this.randInt(soundPool.length - 1)];
-    this.log('sound: %o', sound);
+    // this.log('sound: %o', sound);
     const durationDiff = duration - sound.duration;
     const randomStart = this.randFloat(durationDiff);
 
@@ -458,6 +465,7 @@ export default class Panel extends Logable(Randable(Component())) {
     this.positionCrossAxis();
     this.positionOffscreen();
     this.createSparks();
+
 
     // ensuring this is the last appended element
     this.$el.append(this.$getPanelFrame());
@@ -557,6 +565,7 @@ export default class Panel extends Logable(Randable(Component())) {
   async show({ delay = 0 } = {}) {
     // console.log('just before animateIn, width: %o', this.$el.css('width'))
     await this.readyPromise;
+    // this.positionOffscreen();
 
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -566,6 +575,8 @@ export default class Panel extends Logable(Randable(Component())) {
           translate,
         } = this.getSpec();
         const length = this.$el.css(mainAxisDimName);
+        // this.log('length: %o', length);
+        // this.log('rect length: %o', this.rect[mainAxisDimName]);
 
         // console.log('translate(0): %o', translate(0))
         const contentEnter = [
@@ -576,8 +587,9 @@ export default class Panel extends Logable(Randable(Component())) {
         ];
 
         const playSounds = this.syncSoundsWithAnimation(contentEnter, this.animationEnterTiming);
+        const sparks = this.sparksOpen;
 
-        this.sparksOpen.forEach((spark) => spark.play());
+        sparks.forEach((spark) => spark.play());
         playSounds();
 
         const animation = this.$el[0].animate(
@@ -585,7 +597,13 @@ export default class Panel extends Logable(Randable(Component())) {
           this.animationEnterTiming,
         );
 
-        animation.onfinish = resolve;
+        animation.onfinish = () => {
+          setTimeout(() => (
+            sparks.forEach((spark) => spark.hide())
+          ), 1000);
+
+          resolve();
+        };
       }, delay);
     });
   }
@@ -610,8 +628,9 @@ export default class Panel extends Logable(Randable(Component())) {
         ];
 
         const playSounds = this.syncSoundsWithAnimation(contentExit, this.animationExitTiming);
+        const sparks = this.sparksClose;
 
-        this.sparksClose.forEach((spark) => spark.play());
+        sparks.forEach((spark) => spark.play());
         playSounds();
 
         const animation = this.$el[0].animate(
@@ -619,7 +638,13 @@ export default class Panel extends Logable(Randable(Component())) {
           this.animationExitTiming,
         );
 
-        animation.onfinish = resolve;
+        animation.onfinish = () => {
+          setTimeout(() => (
+            sparks.forEach((spark) => spark.hide())
+          ), 1000);
+
+          resolve();
+        };
       }, delay);
     });
   }

@@ -26,15 +26,6 @@ const Component = (SuperClass = class {}) =>
     children = [];
     mounted = false;
 
-    /**
-     *  Returns the jquery element for the component.
-     *  @type {jquery}
-     */
-    get $el() {
-      if (!this.$el) {
-        throw new Error('Component instance must add its own $el!');
-      }
-    }
 
     get rect() {
       return this.$el[0].getBoundingClientRect();
@@ -47,40 +38,49 @@ const Component = (SuperClass = class {}) =>
 
     constructor({ ...superOpts } = {}) {
       super(superOpts);
-
-      // not entirely sure i want all components acting like an array,
-      // though it does seem convenient at this point. unfortunately
-      // const _this = this;
-      // const arrayAccessorProxySpec = {
-      //   get(target, prop, receiver) {
-      //     if (prop in target) {
-      //       return Reflect.get(target, prop, receiver);
-      //     } else {
-      //       return target._children[prop];
-      //     }
-      //   }
-      // }
-
-      // return new Proxy(this, arrayAccessorProxySpec);
     }
 
+
+    /**
+     * mainly for use _after_ initial render.
+     */
     addChild(...components) {
       components.forEach((component) => {
         component.parent = this;
         this.children.push(component);
       });
+      return this;
     }
 
+    /**
+     * used in render() so chain can function properly
+     */
     append(component) {
       this.$childrenContainer.append(component.$el);
+      return this;
     }
 
+    /**
+     * used in render() so chain can function properly
+     */
     prepend(component) {
       this.$childrenContainer.prepend(component.$el);
+      return this;
     }
-    // push(component) {
-    //   this.
-    // }
+
+    // set or get the value of a css variable on the root
+    // element of a component (i.e. $el)
+    var(name, value) {
+      // optional validation?
+      if (this.vars && !this.vars[varName]) {
+        console.error('varName %o not recognized!', varName);
+        return;
+      } else if (typeof(value) !== 'undefined') {
+        this.$el.css(name, value);
+      }
+
+      return this.$el.css(name);
+    }
 
 
     /**
@@ -97,10 +97,11 @@ const Component = (SuperClass = class {}) =>
      */
     render(parentComponent, prepend = false) {
       const op = prepend ? 'prepend' : 'append';
-      const parentIsJquery = !!parentComponent.jquery;
+      const parent = parentComponent || this.parent;
+      const parentIsJquery = !!parent.jquery;
 
       // only for Page should this accept a jquery object
-      if (!parentIsJquery && !parentComponent.$el) {
+      if (!parentIsJquery && !parent.$el) {
         throw new Error('Component render() must be passed a parent!');
       }
 
@@ -110,13 +111,17 @@ const Component = (SuperClass = class {}) =>
         // now children can access the parent if necessary. should be
         // careful not to create any specific deps on parents though..
         if (parentIsJquery) {
-          this.parent = { $el: parentComponent };
-          parentComponent[op](this.$el);
+          this.parent = { $el: parent };
+          parent[op](this.$el);
         } else {
-          this.parent = parentComponent;
-          parentComponent[op](this);
+          this.parent = parent;
+          parent[op](this);
         }
       }
+
+      // remove all children and re-render. not sure if this will
+      // ever result in weirdness since most page actions are one-and-done.
+      this.children.length && this.$childrenContainer.empty();
 
       // the order of these is likely going to have an impact down the line..
       // for example, what do re-renders look like?

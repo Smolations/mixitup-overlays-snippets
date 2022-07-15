@@ -1,0 +1,28 @@
+.DriftMask {
+  --Drift-mask: repeating-linear-gradient(#000000 0px, #000000 3px, transparent 4px);
+  --Drift-mask-y-max: 200px;
+
+  -webkit-mask-image: var(--Drift-mask);
+  -webkit-mask-size: 200%;
+  animation: drift-mask 12s infinite alternate cubic-bezier(0.1, -0.6, 0.2, 0);
+}
+
+/* was never able to get this working in the web animations api.. =[ */
+@keyframes drift-mask {
+  0% {
+    -webkit-mask-position: 0 0;
+  }
+
+  20% {
+    -webkit-mask-position: 0 calc(0.4 * var(--Drift-mask-y-max));
+  }
+
+  30% {
+    -webkit-mask-position: 0 calc(0.3 * var(--Drift-mask-y-max));
+  }
+
+  100% {
+    /* apparently animating percentages doesn't work */
+    -webkit-mask-position: 0 var(--Drift-mask-y-max);
+  }
+}

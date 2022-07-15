@@ -1,5 +1,7 @@
 import Component from '../../lib/mixins/component.mjs';
 
+import DriftMask from '../DriftMask.mjs';
+
 import Stdin from './Stdin.mjs';
 import Stdout from './Stdout.mjs';
 
@@ -11,12 +13,12 @@ class Terminal extends Component() {
     ...Stdout.assets,
   ];
 
-  vars = {
-    rows: '--terminal-rows',
-    columns: '--terminal-columns',
-    height: '--terminal-height',
-    width: '--terminal-width',
-  };
+  // vars = {
+  //   rows: '--terminal-rows',
+  //   columns: '--terminal-columns',
+  //   height: '--terminal-height',
+  //   width: '--terminal-width',
+  // };
 
   rows;
   columns;
@@ -73,10 +75,15 @@ class Terminal extends Component() {
     this.columns = columns;
     this.rows = rows;
 
+    // instead of letting the Panel add a drift mask, we'll
+    // let Terminal control its own instance
+    this.driftMask = new DriftMask({ yMax: this.heightCalc });
     this.$el = this.$getTerminalContainer();
     this.$terminal = this.$getTerminal();
 
-    this.$el.append(this.$terminal);
+    this.$el.append(
+      this.driftMask.$el.append(this.$terminal),
+    );
 
     // terminals usually start up with an empty line. using
     // .addChild instead of .addPrompt since the lifecycle
@@ -246,15 +253,6 @@ class Terminal extends Component() {
     this.addTerminalLine(stdin);
 
     return stdin;
-  }
-
-  // needed?
-  var(varName) {
-    if (!this.vars[varName]) {
-      console.error('varName %o not recognized!', varName);
-      return;
-    }
-    return this.$root.css(this.vars[varName]);
   }
 }
 

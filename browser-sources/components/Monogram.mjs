@@ -4,10 +4,19 @@ import Component from '../lib/mixins/component.mjs';
 export default class Monogram extends Component() {
   basePath = './img';
 
+  /**
+   * @constructor
+   * @param {Object} props
+   * @property {String} variant one of 'white' or 'orange'. empty means default.
+   * @property {*} [...] the rest are spread into the element's css
+   */
   constructor(props = {}) {
     super();
 
-    const { variant = 'none', padding = 0 } = props;
+    const {
+      variant = 'none',
+      ...css
+    } = props;
 
     this.filePath = this.#getFilePath(variant);
 
@@ -17,7 +26,10 @@ export default class Monogram extends Component() {
         src: this.filePath,
       })
       .css({
-        padding,
+        boxSizing: 'border-box',
+        maxWidth: '100%',
+        maxHeight: '100%',
+        ...css,
       });
   }
 

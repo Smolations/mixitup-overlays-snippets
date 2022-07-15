@@ -201,12 +201,15 @@ export default class Sparks extends Randable() {
     });
   }
 
+  pause() {
+    this.two.pause();
+  }
+
+  hide() {
+    this.two.scene.visible = false;
+  }
 
   // placeholders to implement later
-  // pausing likely won't be worth working on, unless
-  // it takes on a different meaning (e.g. pausing sparks
-  // while not sparking to save on resources)
-  pause() {}
   // perhaps this could be a way to reconfigure an existing instance?
   restart() {}
 
