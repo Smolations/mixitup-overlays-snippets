@@ -12,7 +12,7 @@ export default class GridCell extends Component() {
   content = {};
 
 
-  #location = {
+  location = {
     top: false,
     bottom: false,
     right: false,
@@ -25,7 +25,7 @@ export default class GridCell extends Component() {
 
     const { width, ...locationProps } = props;
 
-    Object.assign(this.#location, locationProps);
+    Object.assign(this.location, locationProps);
 
     this.$el = $('<div>')
       .addClass('GridCell')
@@ -72,7 +72,7 @@ export default class GridCell extends Component() {
   }) {
     const panel = new Panel({
       ...panelOpts,
-      gridLocation: { ...this.#location },
+      gridLocation: { ...this.location },
     });
 
     content && panel.addChild(content);

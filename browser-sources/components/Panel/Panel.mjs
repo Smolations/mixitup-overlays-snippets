@@ -18,13 +18,18 @@ export default class Panel extends Logable(Randable(Component())) {
   sparksOpen = [];
   sparksClose = [];
 
+  onOpenCallbacks = [];
+  onOpenedCallbacks = [];
+  onCloseCallbacks = [];
+  onClosedCallbacks = [];
+
   sounds = {};
 
   // hiding any lingering shadow from hidden content
   offscreenShift = '10px';
 
-  xFrameWidth = '10px';
-  yFrameWidth = '20px';
+  xFrameWidth = '16px';
+  yFrameWidth = '16px';
 
   logoWidth = '200px';
   logoHeight = '21px'; // approx; update if width ever changes
@@ -65,8 +70,9 @@ export default class Panel extends Logable(Randable(Component())) {
       height,
       width,
       gridLocation,
-      center = false,
       preferredAnimationAxis = 'y',
+      open = false,
+      center = false,
       logo = true,
       frameOnly = false,
       driftMask = false,
@@ -74,6 +80,7 @@ export default class Panel extends Logable(Randable(Component())) {
 
     this.height = height;
     this.width = width;
+    this.open = open;
     this.center = center;
     this.gridLocation = gridLocation;
     this.preferredAnimationAxis = preferredAnimationAxis;
@@ -204,6 +211,23 @@ export default class Panel extends Logable(Randable(Component())) {
 
     return $frameBottom;
   }
+
+  onOpen(cb) {
+    this.onOpenCallbacks.push(cb);
+  }
+
+  onOpened(cb) {
+    this.onOpenedCallbacks.push(cb);
+  }
+
+  onClose(cb) {
+    this.onCloseCallbacks.push(cb);
+  }
+
+  onClosed(cb) {
+    this.onClosedCallbacks.push(cb);
+  }
+
 
   // for masking, was only able to get default alpha to work. take black/white
   // image into gimp, create a layer mask from a greyscale copy of the image
@@ -424,6 +448,7 @@ export default class Panel extends Logable(Randable(Component())) {
     const {
       from,
       mainAxisDimName,
+      transformScalar,
     } = gridSpec;
 
     const defaultLength = `var(--min-${mainAxisDimName})`;
@@ -432,9 +457,13 @@ export default class Panel extends Logable(Randable(Component())) {
       ? elLength
       : defaultLength;
 
+    this.log('positionOffscreen elLength: %o', elLength)
+    this.log('positionOffscreen offscreenLength: %o', offscreenLength)
     this.$el.css({
       [from]: `calc(-1 * (${offscreenLength} + ${this.offscreenShift}))`,
+      ...(this.open && { transform: this.translate(`calc(${transformScalar} * (${offscreenLength} + ${this.offscreenShift}))`) })
     });
+    // debugger;
   }
 
 
@@ -536,6 +565,17 @@ export default class Panel extends Logable(Randable(Component())) {
     }, {});
   }
 
+  translate(val) {
+    const { center } = this;
+    const { mainAxis } = this.getSpec();
+    const translations = [0, val];
+
+    if (center) (translations[0] = '-50%');
+    if (mainAxis === 'x') translations.reverse();
+
+    return `translate(${translations.join(', ')})`;
+  }
+
   // @returns {Promise}
   loadSounds() {
     const basePath = './lib/sounds/metal';
@@ -565,87 +605,115 @@ export default class Panel extends Logable(Randable(Component())) {
   async show({ delay = 0 } = {}) {
     // console.log('just before animateIn, width: %o', this.$el.css('width'))
     await this.readyPromise;
-    // this.positionOffscreen();
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const {
-          mainAxisDimName,
-          transformScalar,
-          translate,
-        } = this.getSpec();
-        const length = this.$el.css(mainAxisDimName);
-        // this.log('length: %o', length);
-        // this.log('rect length: %o', this.rect[mainAxisDimName]);
+    // process onOpen callbacks
+    this.onOpenCallbacks.forEach((cb) => cb());
 
-        // console.log('translate(0): %o', translate(0))
-        const contentEnter = [
-          { transform: translate(0) },
-          { offset: 0.15, transform: translate(`calc(0.7 * ${length} * ${transformScalar})`) },
-          { offset: 0.20, transform: translate(`calc(0.65 * ${length} * ${transformScalar})`) },
-          { transform: translate(`calc(${transformScalar} * (${length} + ${this.offscreenShift}))`) },
-        ];
+    let promise = Promise.resolve();
 
-        const playSounds = this.syncSoundsWithAnimation(contentEnter, this.animationEnterTiming);
-        const sparks = this.sparksOpen;
+    if (!this.open) {
+      promise = new Promise((resolve) => {
+        setTimeout(() => {
+          const {
+            mainAxisDimName,
+            transformScalar,
+            translate,
+          } = this.getSpec();
+          const length = this.$el.css(mainAxisDimName);
+          // this.log('length: %o', length);
+          // this.log('rect length: %o', this.rect[mainAxisDimName]);
 
-        sparks.forEach((spark) => spark.play());
-        playSounds();
+          // console.log('translate(0): %o', translate(0))
+          const contentEnter = [
+            { transform: translate(0) },
+            { offset: 0.15, transform: translate(`calc(0.7 * ${length} * ${transformScalar})`) },
+            { offset: 0.20, transform: translate(`calc(0.65 * ${length} * ${transformScalar})`) },
+            { transform: translate(`calc(${transformScalar} * (${length} + ${this.offscreenShift}))`) },
+          ];
 
-        const animation = this.$el[0].animate(
-          contentEnter,
-          this.animationEnterTiming,
-        );
+          const playSounds = this.syncSoundsWithAnimation(contentEnter, this.animationEnterTiming);
+          const sparks = this.sparksOpen;
 
-        animation.onfinish = () => {
-          setTimeout(() => (
-            sparks.forEach((spark) => spark.hide())
-          ), 1000);
+          sparks.forEach((spark) => spark.play());
+          playSounds();
 
-          resolve();
-        };
-      }, delay);
+          const animation = this.$el[0].animate(
+            contentEnter,
+            this.animationEnterTiming,
+          );
+
+          animation.onfinish = () => {
+            setTimeout(() => (
+              sparks.forEach((spark) => spark.hide())
+            ), 1000);
+
+            resolve();
+          };
+        }, delay);
+      });
+    }
+
+    promise = promise.then(() => {
+      this.onOpenedCallbacks.forEach((cb) => cb());
     });
+
+    // this means it would never open again?
+    return promise;
   }
 
   // expects an object with an $el
   // @returns {Promise}
-  hide({ delay = 0 } = {}) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const {
-          mainAxisDimName,
-          transformScalar,
-          translate,
-        } = this.getSpec();
-        const length = this.$el.css(mainAxisDimName);
+  async hide({ delay = 0 } = {}) {
+    await this.readyPromise;
 
-        // bottom may need more offset since drop shadow offsets upward
-        const contentExit = [
-          { transform: translate(`calc(${transformScalar} * (${length} + ${this.offscreenShift}))`) },
-          { offset: 0.40, transform: translate(`calc(0.3 * ${length} * ${transformScalar})`) },
-          { transform: translate(0) },
-        ];
+    let promise = Promise.resolve();
 
-        const playSounds = this.syncSoundsWithAnimation(contentExit, this.animationExitTiming);
-        const sparks = this.sparksClose;
+    // process onOpen callbacks
+    this.onCloseCallbacks.forEach((cb) => cb());
 
-        sparks.forEach((spark) => spark.play());
-        playSounds();
+    if (this.open) {
+      promise = new Promise((resolve) => {
+        setTimeout(() => {
+          const {
+            mainAxisDimName,
+            transformScalar,
+            translate,
+          } = this.getSpec();
+          const length = this.$el.css(mainAxisDimName);
 
-        const animation = this.$el[0].animate(
-          contentExit,
-          this.animationExitTiming,
-        );
+          // bottom may need more offset since drop shadow offsets upward
+          const contentExit = [
+            { transform: translate(`calc(${transformScalar} * (${length} + ${this.offscreenShift}))`) },
+            { offset: 0.40, transform: translate(`calc(0.3 * ${length} * ${transformScalar})`) },
+            { transform: translate(0) },
+          ];
 
-        animation.onfinish = () => {
-          setTimeout(() => (
-            sparks.forEach((spark) => spark.hide())
-          ), 1000);
+          const playSounds = this.syncSoundsWithAnimation(contentExit, this.animationExitTiming);
+          const sparks = this.sparksClose;
 
-          resolve();
-        };
-      }, delay);
+          sparks.forEach((spark) => spark.play());
+          playSounds();
+
+          const animation = this.$el[0].animate(
+            contentExit,
+            this.animationExitTiming,
+          );
+
+          animation.onfinish = () => {
+            setTimeout(() => (
+              sparks.forEach((spark) => spark.hide())
+            ), 1000);
+
+            resolve();
+          };
+        }, delay);
+      });
+    }
+
+    promise = promise.then(() => {
+      this.onClosedCallbacks.forEach((cb) => cb());
     });
+
+    return promise;
   }
 }

@@ -27,7 +27,6 @@ page.ready(async (grid) => {
     center: true,
     frameOnly: true,
   });
-  window.terminal = terminal;
 
   const queryParams = new URLSearchParams(window.location.search);
   const follower = queryParams.get('follower');

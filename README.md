@@ -20,13 +20,13 @@ events:
 
 
 todo:
-- [~] create terminal event notifications for applicable events
-  - [ ] sub/mass-sub gift giving
-  - [ ] resub
-  - [ ] cheer
+- [x] create terminal event notifications for applicable events
+  - [x] sub/mass-sub gift giving
+  - [x] resub
+  - [x] cheer
   - [ ] hosting
   - [x] also trigger auto shoutout for raid event
-- [ ] determine total terminal event overlay duration from MIU (pass to page via query param)
+- [x] determine total terminal event overlay duration from MIU (pass to page via query param)
 - [~] fix monogram border
 - [x] set up new follower/sub with terminal event
 - [x] figure out grid system and abstraction for various files
@@ -41,8 +41,15 @@ todo:
   - [x] create special class for sound effects? could help with randomization and timing, fade volume, etc
   - [\] sparks
   - [ ] to accompany certain events (e.g. raid)
+    - [ ] cheer
+    - [ ] host
+    - [ ] raid event
+    - [ ] resub?
+    - [ ] gift sub?
+    - [ ] mass gift sub?
   - [ ] preload Stdin keypresses on a static property
   - [ ] delayed terminal output (not too intrusive/annoying)
+- [ ] if dev stream enabled, enable timer to notify chat of dev stream commands
 - [x] fix monogram size in terminal events and maybe width
 - [x] find css sparks for panels
 - [x] experiment with MIU widget

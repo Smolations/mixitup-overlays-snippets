@@ -77,45 +77,6 @@ function getNewSubscriberSession(params) {
   };
 }
 
-// uses: $arg1_, $hostviewercount, $raidviewercount
-// params: username, hostCount, raidCount
-// ?duration=16&subject=raid&username=SneakyFoxtrot&raidCount=72
-function getRaidSession(params) {
-  const username = params.get('username');
-  // const hostCount = params.get('hostCount'); // leftover from mixer; same as raidCount
-  const raidCount = params.get('raidCount');
-
-  return (command) => {
-    command((stdin, stdout) => {
-      stdin('raid --welcome');
-      stdout(
-        'oh damn! %h just raided with %h viewers! shit, are my genitals showing?',
-        username,
-        raidCount,
-      );
-    });
-  };
-}
-
-// uses: $arg1_
-// params: username
-// ?duration=16&subject=host&username=MaHuJa
-function getHostSession(params) {
-  const username = params.get('username');
-
-  return (command) => {
-    command((stdin, stdout) => {
-      stdin('host --init');
-      stdout((out, resolve) => {
-        const $line1 = out.$getTerminalLine('Initializing host...');
-        out.$el.append($line1);
-        setTimeout(resolve, 2000);
-      });
-      stdout('Host initialized by %h. Spanks bruv.', username);
-    });
-  };
-}
-
 // uses: $arg1_, $message, $usersubplanname, $usersubplan(e.g. Tier 1), $usersubmonths, $usersubstreak
 // params: username, message, subName, tier, months, streak
 // ?duration=24&subject=reSubscriber&username=IrishFatty&message=i heart you&subName=Bravo Gold Package&tier=Tier 2&months=8&streak=7
@@ -189,6 +150,45 @@ function getMassSubGiftedSession(params) {
       stdout(`Level:      %h`, tier);
       stdout(`Amount:     %h (${lifetimeAmount} lifetime)`, amount);
       stdout('You beneficiaries be lucky. %h is a high roller. Enjoy your new esmojis and this complimentary message.', benefactor);
+    });
+  };
+}
+
+// uses: $arg1_, $hostviewercount, $raidviewercount
+// params: username, hostCount, raidCount
+// ?duration=16&subject=raid&username=SneakyFoxtrot&raidCount=72
+function getRaidSession(params) {
+  const username = params.get('username');
+  // const hostCount = params.get('hostCount'); // leftover from mixer; same as raidCount
+  const raidCount = params.get('raidCount');
+
+  return (command) => {
+    command((stdin, stdout) => {
+      stdin('raid --welcome');
+      stdout(
+        'oh damn! %h just raided with %h viewers! shit, are my genitals showing?',
+        username,
+        raidCount,
+      );
+    });
+  };
+}
+
+// uses: $arg1_
+// params: username
+// ?duration=16&subject=host&username=MaHuJa
+function getHostSession(params) {
+  const username = params.get('username');
+
+  return (command) => {
+    command((stdin, stdout) => {
+      stdin('host --init');
+      stdout((out, resolve) => {
+        const $line1 = out.$getTerminalLine('Initializing host...');
+        out.$el.append($line1);
+        setTimeout(resolve, 2000);
+      });
+      stdout('Host initialized by %h. Spanks bruv.', username);
     });
   };
 }

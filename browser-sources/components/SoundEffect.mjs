@@ -9,6 +9,11 @@ export default class SoundEffect {
     return 1000 * this.audio.duration;
   }
 
+  set loop(val) {
+    this.audio.loop = val;
+  }
+
+
   constructor(filePath) {
     const audio = new Audio(filePath);
 

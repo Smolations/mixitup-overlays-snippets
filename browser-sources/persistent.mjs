@@ -4,7 +4,7 @@ import Page from './components/Page.mjs';
 
 
 const page = new Page({
-  grid: { rows: 2, cols: 2 },
+  grid: { rows: 3, cols: 3 },
   assets: [
     // ...Terminal.assets,
   ],
@@ -12,21 +12,17 @@ const page = new Page({
 
 
 page.ready(async (grid) => {
-  const cell = grid.cell(0, 0);
-
-  const monogram = new Monogram({ variant: '', padding: '1ch' });
+  const cell = grid.cell(1, 0);
+  const width = 1920;
+  const height = 1080;
 
   // for random panel content to result in accurate animations,
   // ensure at _least_ the mainAxis dimension is set
-  const panel = cell.addPanel('monogram', {
-    preferredAnimationAxis: 'x',
-    content: monogram,
-    width: '100px',
-    logo: false,
+  const panel = cell.addPanel('frame', {
+    height: `${height}px`,
+    width: `${width}px`,
+    center: true,
+    open: true,
     frameOnly: true,
-    driftMask: { backgroundColor: 'rgba(255, 255, 255, 0.6)' },
   });
-
-  // delay so i can click page before sounds are heard
-  await panel.show();
 });
