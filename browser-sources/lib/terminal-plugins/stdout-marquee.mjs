@@ -1,5 +1,6 @@
-export default function StdOutMarquee({ stdoutArgs, numRenders, speed = 200 }) {
+export default function StdOutMarquee({ stdoutArgs, numRenders = 1, speed = 200 }) {
   return (stdout, resolve) => {
+    const now = Date.now();
     const $output = stdout.$getTerminalLine(...stdoutArgs);
     const numCols = stdout.parent.columns;
     const colsBetweenRenders = Math.ceil(numCols / 2);
@@ -22,6 +23,7 @@ export default function StdOutMarquee({ stdoutArgs, numRenders, speed = 200 }) {
 
       if (leftCount < -numChars - 1) {
         clearInterval(interval);
+        console.debug('[StdOutMarquee plugin] marquee duration (%o renders): %o', numRenders, Date.now() - now);
         resolve();
       }
     }, speed);

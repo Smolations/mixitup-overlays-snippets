@@ -643,6 +643,8 @@ export default class Panel extends Logable(Randable(Component())) {
           );
 
           animation.onfinish = () => {
+            this.open = true;
+
             setTimeout(() => (
               sparks.forEach((spark) => spark.hide())
             ), 1000);
@@ -700,6 +702,8 @@ export default class Panel extends Logable(Randable(Component())) {
           );
 
           animation.onfinish = () => {
+            this.open = false;
+
             setTimeout(() => (
               sparks.forEach((spark) => spark.hide())
             ), 1000);

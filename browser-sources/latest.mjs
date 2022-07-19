@@ -34,7 +34,11 @@ page.ready(async (grid) => {
 
   // maybe join marquee runs together (no fully empty space except on start/finish)
 
-  // console.log('terminal.rect.left (post-open): %o', terminal.rect.left)
+  // if knowing that this will show up using an MIU overlay endpoint,
+  // then a wait delay seems appropriate to avoid showing too soon on
+  // the "stream starting" overlay. should still be able to accept it
+  // as a query param, however (probs should make it global so other
+  // panel widgets can use it).
   await panel.show();
 
   await terminal.session((command) => {
